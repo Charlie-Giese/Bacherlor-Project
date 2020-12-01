@@ -11,7 +11,6 @@ from astropy.wcs import WCS
 from matplotlib import cm	
 
 
-filename='/home/charlie/college/project/fits/ngc7635_g0.5_briggs1.0_nsig5.image.tt0.fits'
 
 def args(argv):
 	arguments=['','','','']
@@ -92,7 +91,7 @@ def image_plot(image_data, contours, c, savefile, outputfile):
 	   The contours option takes a boolean"""
 	
 	
-	hdu = fits.open(filename)
+	hdu = fits.open(os.getcwd()+inputfile)
 	hrd=hdu[0].header
 	wcs = WCS(hrd)
 	
@@ -143,7 +142,26 @@ image=power_scale(b_map, p, [lower_lim, upper_lim])
 c=image_plot(image, contours, c, savefile, outputfile)
 
 
+def emission_measure(S):
+	T=8000 #K
+	v=8e9 # central frequency of our broadband observations
+	S_erg = S * 10**-23 #this is the surface brightness in units of ergs/cm^2/sr
+	c=3e10 #speed of light in cgs
+	k_b=1.38e-16 #boltzmann constant in cgs
+	emission_measure = -1 *np.log(1 - ((S_erg*c**2)/(2*k_b*T*(v**2)))) * 1/(3.28e-7) * (T/1e4)**1.35 * (v/1e9)**2.1	
+	return emission_measure
 
+
+
+
+sb=import_fits(filename)
+em=emission_measure(T, v, sb)
+
+fig=plt.figure(1)
+ax=fig.add_subplot(111)
+em_map=ax.imshow(em, origin='lower')
+fig.colorbar(em_map)
+plt.show()
 
 
 
