@@ -9,6 +9,8 @@ import os
 import sys, getopt
 from astropy.wcs import WCS
 from matplotlib import cm	
+from astropy.visualization import (MinMaxInterval, SqrtStretch,
+                                   ImageNormalize)
 
 
 
@@ -57,9 +59,10 @@ def import_fits(filename):
 	fwhm_to_sigma = 1. / (8 * np.log(2))**0.5
 	beam_sigma = beam_fwhm * fwhm_to_sigma
 	omega_B = 2 * np.pi * beam_sigma**2
-	surface_brightness=((data*u.Jy/u.beam).to(u.Jy/u.sr, equivalencies=u.beam_angular_area(omega_B)))[0,0,:,:]
+	surface_brightness=((data*u.Jy/u.beam).to(u.MJy/u.sr, equivalencies=u.beam_angular_area(omega_B)))[0,0,:,:]
 	print(np.max(surface_brightness))
 	return surface_brightness
+
 
 def power_scale(b_map, p, d_range):
 	"""Takes as inputs a surface brightness map in Jy/str, a value for the power scaling and a data_range (list)
@@ -68,7 +71,6 @@ def power_scale(b_map, p, d_range):
 	   scaled linearly to the set of availabel colors. (NOTE: This assumes negative values of p, can also take 
 	   positive values, not described here"""
 	
-		
 	data=b_map.value #[0,0,:,:] only keep dimensions we want
 
 
@@ -85,6 +87,7 @@ def power_scale(b_map, p, d_range):
 		return output
 	else:
 		return data
+
 		
 def image_plot(image_data, contours, c, savefile, outputfile):
 	"""Takes a scaled image in the form of a numpy array and plots it along with coordinates and a colorbar
@@ -95,28 +98,57 @@ def image_plot(image_data, contours, c, savefile, outputfile):
 	hrd=hdu[0].header
 	wcs = WCS(hrd)
 	
+	data=image_data.value
+	
+	norm = ImageNormalize(data, interval=MinMaxInterval(),
+                      stretch=SqrtStretch())
+	
 	figure=plt.figure(num=1)
 	ax=figure.add_subplot(111, projection=wcs, slices=('x','y',0,0))
-	main_image=ax.imshow(X=image_data, cmap='plasma', origin='lower')
-	figure.colorbar(main_image)
+	main_image=ax.imshow(X=data, cmap='plasma', origin='lower', norm=norm, vmax=np.max(data)- 5 , vmin=np.min(data))
+	cbar=figure.colorbar(main_image)
 	ax.set_xlabel('Right Ascension J2000')
 	ax.set_ylabel('Declination J2000')
+	cbar.set_label('Surface Brigthness (MJy/Sr)')
 	if contours==True:
 		n = 7 #number of contours
-		ub = np.max(image_data) #- (p-1)/(n)
-		lb = np.min(image_data) #+ (p-1)/(n)
+		ub = np.max(data) #- (p-1)/(n)
+		lb = np.min(data) #+ (p-1)/(n)
 		spacing = c
 		def level_func(lb, ub, n, spacing=1.1):
 			span = (ub-lb)
 			dx = 1.0 / (n-1)
 			return [lb + (i*dx)**spacing*span for i in range(n)]
-		levels=level_func(lb, ub, n, spacing=1.1)
-		norm = cm.colors.Normalize(vmax=abs(image_data).max(), vmin=-abs(image_data).max())
-		ax.contour(image_data, levels=levels, colors='white', alpha=0.5)
+		levels=level_func(lb, ub, n, spacing=float(c))
+		ax.contour(data, levels=levels, colors='white', alpha=0.5)
 	plt.show()
 	if savefile == True:
 		plt.savefig(os.getcwd()+outputfile)
-	 
+		
+
+def emission_measure(S):
+	T=8000 #K
+	v=8e9 # central frequency of our broadband observations
+	S_erg = S * 10**-23 #this is the surface brightness in units of ergs/cm^2/sr
+	c=3e10 #speed of light in cgs
+	k_b=1.38e-16 #boltzmann constant in cgs
+	emission_measure = -1 *np.log(1 - ((S_erg*c**2)/(2*k_b*T*(v**2)))) * 1/(3.28e-7) * (T/1e4)**1.35 * (v/1e9)**2.1	
+	
+	hdu = fits.open(os.getcwd()+inputfile)
+	hrd=hdu[0].header
+	wcs = WCS(hrd)
+	
+	fig=plt.figure(1) 
+	ax=fig.add_subplot(111, projection=wcs, slices=('x','y',0,0))
+	em_map=ax.imshow(emission_measure, origin='lower')
+	ax.set_xlabel('Right Ascension')
+	ax.set_ylabel('Declination')
+	cbar=fig.colorbar(em_map)
+	cbar.set_label('Emission Measure')
+	plt.show()
+	
+	return emission_measure
+
 
 arguments = args(sys.argv[1:])
 
@@ -138,30 +170,11 @@ else:
 b_map=import_fits(inputfile)
 lower_lim=np.min(b_map)
 upper_lim=np.max(b_map) 
-image=power_scale(b_map, p, [lower_lim, upper_lim]) 
-c=image_plot(image, contours, c, savefile, outputfile)
+#image=power_scale(b_map, p, [lower_lim, upper_lim]) 
+c=image_plot(b_map, contours, c, savefile, outputfile)
+em=emission_measure(b_map.value)
 
 
-def emission_measure(S):
-	T=8000 #K
-	v=8e9 # central frequency of our broadband observations
-	S_erg = S * 10**-23 #this is the surface brightness in units of ergs/cm^2/sr
-	c=3e10 #speed of light in cgs
-	k_b=1.38e-16 #boltzmann constant in cgs
-	emission_measure = -1 *np.log(1 - ((S_erg*c**2)/(2*k_b*T*(v**2)))) * 1/(3.28e-7) * (T/1e4)**1.35 * (v/1e9)**2.1	
-	return emission_measure
-
-
-
-
-sb=import_fits(filename)
-em=emission_measure(T, v, sb)
-
-fig=plt.figure(1)
-ax=fig.add_subplot(111)
-em_map=ax.imshow(em, origin='lower')
-fig.colorbar(em_map)
-plt.show()
 
 
 
