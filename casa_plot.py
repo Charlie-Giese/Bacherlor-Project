@@ -21,7 +21,6 @@ parser.add_argument("-d", "--d_range", nargs="+", help="range of data to plot", 
 parser.add_argument("-o", "--outputfile", help="name of output .png file (optional)", default=False)
 parser.add_argument("-e", "--emission_measure", help="Optional emission measure plot, True/False", default=False)
 args = parser.parse_args()
-print(args)
 inputfile=args.inputfile
 contour_bias=args.contour_bias
 d_range=args.d_range
@@ -53,8 +52,9 @@ def import_fits(filename, d_range):
 	
 	
 	sb_maskedNAN = np.ma.array(SB, mask=np.isnan(SB))	
-	if d_range == True:
-		sb_maskedNAN[(sb_maskedNAN < np.float32(d_range[0])) & (sb_maskedNAN > np.float32(d_range[1]))] = np.nan
+	if d_range != False:
+		sb_maskedNAN[(sb_maskedNAN < np.float32(d_range[0]))] = d_range[0]
+		sb_maskedNAN[(sb_maskedNAN > np.float32(d_range[1]))] = d_range[1]
 	
 	array = np.ma.array(sb_maskedNAN, mask=np.isnan(sb_maskedNAN))	
 	
@@ -72,6 +72,7 @@ def image_plot(inputfile, d_range, contour_bias, outputfile):
 	wcs = WCS(hrd)
 	
 	data=import_fits(inputfile, d_range)
+
 
 	norm = ImageNormalize(data, interval=MinMaxInterval(),
                       stretch=SqrtStretch())
