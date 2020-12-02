@@ -11,49 +11,26 @@ from astropy.wcs import WCS
 from matplotlib import cm	
 from astropy.visualization import (MinMaxInterval, SqrtStretch,
                                    ImageNormalize)
+import argparse
 
+parser = argparse.ArgumentParser(description='Plot an image in fits format.')
+parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
+parser.add_argument("-i", "--inputfile", help="Path of input fits file relative to current working directory")
+parser.add_argument("-c", "--contour_bias", help="value of contour level bias", default=False)
+parser.add_argument("-d", "--d_range", nargs="+", help="range of data to plot", default=False)
+parser.add_argument("-o", "--outputfile", help="name of output .png file (optional)", default=False)
+parser.add_argument("-e", "--emission_measure", help="Optional emission measure plot, True/False", default=False)
+args = parser.parse_args()
 
-
-def args(argv):
-	arguments=['','','','']
-	try:
-		opts, args = getopt.getopt(argv,"hi:d:c:o:")
-	except 	getopt.GetoptError:
-		print('casa_plot.py -i <inputfile> -p <power_scale_factor> -c <contour_bias_factor> -o <outputfile')
-		sys.exit(2)
-	for opt, arg in opts:
-		if opt == '-h':
-			print('Usage:')
-			print('-i <inputfile>, required. Path to fits file relative to current working directory.')
-			print('-d <data_range>, the data range you want to plot, e.g. "-d 0,1"')
-			print('-c <contour_bias_factor>, optional. If blank, no contours. Takes values in range [0-inf]. Value of 0 results in contours biased towards maximum of data range, higher values scale towards min')
-			print('-o <outputfile>, optional. Name of output png file, if blank does not save image')
-			sys.exit()
-		elif opt in ('-i'):
-			inputfile = arg
-			arguments[0] = arg
-		elif opt in ('-d'):
-			d_range=[arg]
-			arguments[1] = d_range
-		elif opt in ('-c'):
-			c = arg
-			arguments[2] = arg
-			if c != '':
-				contours=True
-			else:
-				contours=False
-		elif opt in ('-o'):
-			outputfile = arg
-			arguments[3] = outputfile
-			if outputfile != '':
-				savefile=True
-			else:
-				savefile=False
-	return arguments
+inputfile=args.inputfile
+contour_bias=args.contour_bias
+d_range=args.d_range
+outputfile=args.outputfile
+ 
 
 
 def import_fits(filename, d_range):
-	"""Imports a FITS radio image from CASA pipeline """
+	"""Imports a FITS radio image from CASA pipeline"""
 	
 	fits_image_filename = os.getcwd()+filename
 	with fits.open(fits_image_filename) as hdul:
@@ -71,27 +48,30 @@ def import_fits(filename, d_range):
 	
 	"""SB is a 2-d array with Surface_brigthness values in MJy/sr. For masked arrays, some values are nan, need to create a mask to 
 	these values. Before that, need to set all values not within data range to NAN. Using SB.data can access the original array."""
-
-
-	if d_range != '':
-		SB[SB < d_range[0] && SB > d_range[1]] = np.nan
+	
+	
 	
 	sb_maskedNAN = np.ma.array(SB, mask=np.isnan(SB))	
-	return sb_maskedNAN
+	if d_range == True:
+		sb_maskedNAN[(sb_maskedNAN < np.float32(d_range[0])) & (sb_maskedNAN > np.float32(d_range[1]))] = np.nan
+	
+	array = np.ma.array(SB, mask=np.isnan(sb_maskedNAN))	
+	
+	return array
 
 
-def image_plot(image_data, contours, c, savefile, outputfile):
+def image_plot(inputfile, d_range, contour_bias, outputfile):
 	"""Takes a scaled image in the form of a numpy array and plots it along with coordinates and a colorbar
 	   The contours option takes a boolean"""
 	
+	c=contour_bias
 	
 	hdu = fits.open(os.getcwd()+inputfile)
 	hrd=hdu[0].header
 	wcs = WCS(hrd)
 	
-	data=image_data.value
-	
-	
+	data=import_fits(inputfile, d_range)
+
 	norm = ImageNormalize(data, interval=MinMaxInterval(),
                       stretch=SqrtStretch())
 	
@@ -102,7 +82,7 @@ def image_plot(image_data, contours, c, savefile, outputfile):
 	ax.set_xlabel('Right Ascension J2000')
 	ax.set_ylabel('Declination J2000')
 	cbar.set_label('Surface Brigthness (MJy/Sr)')
-	if contours==True:
+	if contour_bias != False:
 		n = 7 #number of contours
 		ub = np.max(data) #- (p-1)/(n)
 		lb = np.min(data) #+ (p-1)/(n)
@@ -114,11 +94,13 @@ def image_plot(image_data, contours, c, savefile, outputfile):
 		levels=level_func(lb, ub, n, spacing=float(c))
 		ax.contour(data, levels=levels, colors='white', alpha=0.5)
 	plt.show()
-	if savefile == True:
+	if outputfile != False:
 		plt.savefig(os.getcwd()+outputfile)
 		
 
-def emission_measure(S):
+def emission_measure():
+	S=import_fits(inputfile, d_range)
+
 	T=8000 #K
 	v=8e9 # central frequency of our broadband observations
 	S_erg = S * 10**-17	 #this is the surface brightness in units of ergs/cm^2/sr
@@ -142,18 +124,13 @@ def emission_measure(S):
 	return emission_measure
 
 
-arguments = args(sys.argv[1:])
 
-inputfile = arguments[0]
-d_range = arguments[1]
-c = arguments[2]
-outputfile = arguments[3]
 
-b_map=import_fits(inputfile, d_range)
-lower_lim=np.min(b_map)
-upper_lim=np.max(b_map) 
-c=image_plot(b_map, contours, c, savefile, outputfile)
-em=emission_measure(b_map.value)
+
+result=image_plot(inputfile, d_range, contour_bias, outputfile)
+print(args.emission_measure)
+if args.emission_measure == True:
+	em=emission_measure()
 
 
 
@@ -165,30 +142,7 @@ em=emission_measure(b_map.value)
 
 
 
-# THIS FUNCTION IS NO LONGER USED
-def power_scale(b_map, p, d_range):
-	"""Takes as inputs a surface brightness map in Jy/str, a value for the power scaling and a data_range (list)
-	   First, data is clipped so it only lies within the given data range. It is then scaled to lie between 0 and
-	   and 10^p where p is the scale. Then take log of these values, giving a range of 1-p. These values will be 
-	   scaled linearly to the set of availabel colors. (NOTE: This assumes negative values of p, can also take 
-	   positive values, not described here"""
-	
-	data=b_map.value #[0,0,:,:] only keep dimensions we want
 
-
-	if p < 0:
-		power=-1.*p
-		scaled_data=((data-np.min(data))/np.max(data))*(10**power)
-		#print(np.min(scaled_data), np.max(scaled_data), scaled_data)
-		output=np.log10(scaled_data+1)
-		#print(np.min(output), np.max(output), output)
-		return output
-	elif p >0:
-		scaled_data=((data-np.min(data))/np.max(data))*(p)
-		output=10**scaled_data
-		return output
-	else:
-		return data
 
 
 
