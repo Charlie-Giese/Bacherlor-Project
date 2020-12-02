@@ -21,11 +21,12 @@ parser.add_argument("-d", "--d_range", nargs="+", help="range of data to plot", 
 parser.add_argument("-o", "--outputfile", help="name of output .png file (optional)", default=False)
 parser.add_argument("-e", "--emission_measure", help="Optional emission measure plot, True/False", default=False)
 args = parser.parse_args()
-
+print(args)
 inputfile=args.inputfile
 contour_bias=args.contour_bias
 d_range=args.d_range
 outputfile=args.outputfile
+emission_measure=args.emission_measure
  
 
 
@@ -55,7 +56,7 @@ def import_fits(filename, d_range):
 	if d_range == True:
 		sb_maskedNAN[(sb_maskedNAN < np.float32(d_range[0])) & (sb_maskedNAN > np.float32(d_range[1]))] = np.nan
 	
-	array = np.ma.array(SB, mask=np.isnan(sb_maskedNAN))	
+	array = np.ma.array(sb_maskedNAN, mask=np.isnan(sb_maskedNAN))	
 	
 	return array
 
@@ -82,7 +83,7 @@ def image_plot(inputfile, d_range, contour_bias, outputfile):
 	ax.set_xlabel('Right Ascension J2000')
 	ax.set_ylabel('Declination J2000')
 	cbar.set_label('Surface Brigthness (MJy/Sr)')
-	if contour_bias != False:
+	if c != False:
 		n = 7 #number of contours
 		ub = np.max(data) #- (p-1)/(n)
 		lb = np.min(data) #+ (p-1)/(n)
@@ -98,7 +99,7 @@ def image_plot(inputfile, d_range, contour_bias, outputfile):
 		plt.savefig(os.getcwd()+outputfile)
 		
 
-def emission_measure():
+def em():
 	S=import_fits(inputfile, d_range)
 
 	T=8000 #K
@@ -121,16 +122,16 @@ def emission_measure():
 	cbar.set_label('Emission Measure')
 	plt.show()
 	
-	return emission_measure
+
 
 
 
 
 
 result=image_plot(inputfile, d_range, contour_bias, outputfile)
-print(args.emission_measure)
-if args.emission_measure == True:
-	em=emission_measure()
+
+if emission_measure != False:
+	result=em()
 
 
 
