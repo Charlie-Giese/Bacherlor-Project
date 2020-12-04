@@ -69,7 +69,8 @@ def em(inputfile, contour_bias, outputfile):  #,d_range)
 	S_erg = S * 10**-17	 #this is the surface brightness in units of ergs/cm^2/sr
 	c=3e10 #speed of light in cgs
 	k_b=1.38e-16 #boltzmann constant in cgs
-	emission_measure = -1 *np.log(1 - ((S_erg*c**2)/(2*k_b*T*(v**2)))) * 1/(3.28e-7) * (T/1e4)**1.35 * (v/1e9)**2.1	
+	emission_measure = (-1 *np.log(1 - ((S_erg*c**2)/(2*k_b*T*(v**2)))) * 1/(3.28e-7) * (T/1e4)**1.35 * (v/1e9)**2.1)/(1e3)
+	
 	
 	c=contour_bias
 	
@@ -83,11 +84,11 @@ def em(inputfile, contour_bias, outputfile):  #,d_range)
 	
 	fig=plt.figure(1) 
 	ax=fig.add_subplot(111, projection=wcs, slices=('x','y',0,0))
-	em_map=ax.imshow(emission_measure, origin='lower', cmap='plasma')
+	em_map=ax.imshow(emission_measure, origin='lower', cmap='plasma', norm=norm)
 	ax.set_xlabel('Right Ascension')
 	ax.set_ylabel('Declination')
 	cbar=fig.colorbar(em_map)
-	cbar.set_label('Emission Measure')
+	cbar.set_label('Emission Measure, kpc cm^-6')
 	if contour_bias != False:
 		n = 7 #number of contours
 		ub = np.max(emission_measure) #- (p-1)/(n)
