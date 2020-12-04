@@ -17,6 +17,7 @@ from radio_beam import Beam
 parser = argparse.ArgumentParser(description='Plot an image in fits format.')
 parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
 parser.add_argument("-i", "--inputfile", help="Path of input fits file relative to current working directory")
+parser.add_argument("-cf", "--contour_file", help"fits file to plot contours from")
 parser.add_argument("-ct", "--contour_type", help="automatic (contour_bias) or defined (contour_levels)") 
 parser.add_argument("-cb", "--contour_bias", help="value of contour level bias")
 parser.add_argument("-cl", "--contour_levels", nargs="+", help="sigma levels to plot contours at")
@@ -25,6 +26,7 @@ parser.add_argument("-o", "--outputfile", help="name of output .png file (option
 parser.add_argument("-e", "--emission_measure", help="Optional emission measure plot, True/False", default=False)
 args = parser.parse_args()
 inputfile=args.inputfile
+contour_file=args.contour_file
 contour_type=str(args.contour_type)
 contour_levels=list(map(float, args.contour_levels))
 contour_bias=args.contour_bias
@@ -45,6 +47,32 @@ def import_fits(filename, d_range):
 	header = fits.getheader(fits_image_filename)
 	beam = Beam.from_fits_header(header)
 
+	SB=((data*u.Jy/u.beam).to(u.MJy/u.sr, equivalencies=u.beam_angular_area(beam)))[0,0,:,:].value
+	"""SB is a 2-d array with Surface_brigthness values in MJy/sr. For masked arrays, some values are nan, need to create a mask to 
+	these values. Before that, need to set all values not within data range to NAN. Using SB.data can access the original array."""
+	
+	sb_maskedNAN = np.ma.array(SB, mask=np.isnan(SB))	
+	if d_range != False:
+		sb_maskedNAN[(sb_maskedNAN < np.float32(d_range[0]))] = d_range[0]
+		sb_maskedNAN[(sb_maskedNAN > np.float32(d_range[1]))] = d_range[1]
+	
+	array = np.ma.array(sb_maskedNAN, mask=np.isnan(sb_maskedNAN))	
+	
+	return array
+	
+def import_contours(filename):
+	"""Imports a FITS radio image from CASA pipeline"""
+	
+	fits_image_filename = os.getcwd()+filename
+	with fits.open(fits_image_filename) as hdul:
+		#print(hdul.info())
+		data=hdul[0].data
+
+	header = fits.getheader(fits_image_filename)
+	try:
+		beam = Beam.from_fits_header(header)
+	except:
+		continue
 	#now convert to Jy/str surface brigthness
 	#fwhm_to_sigma = 1. / (8 * np.log(2))**0.5
 	#beam_fwhm_x = beam[0]*u.arcsec
@@ -69,7 +97,7 @@ def import_fits(filename, d_range):
 	return array
 
 
-def image_plot(inputfile, d_range, contour_type, outputfile):
+def image_plot(inputfile, d_range, outputfile):
 	"""Takes a scaled image in the form of a numpy array and plots it along with coordinates and a colorbar
 	   The contours option takes a boolean"""
 	
@@ -92,28 +120,38 @@ def image_plot(inputfile, d_range, contour_type, outputfile):
 	ax.set_xlabel('Right Ascension J2000')
 	ax.set_ylabel('Declination J2000')
 	cbar.set_label('Surface Brigthness (MJy/Sr)')
+	
+	plt.show()
+	if outputfile != False:
+		plt.savefig(os.getcwd()+outputfile)
+		
+def contour_plot(ax, contour_file, contour_type)
+
+
+	hdu = fits.open(os.getcwd()+contour_file)
+	hrd=hdu[0].header
+	wcs = WCS(hrd)
+	contour_data=import_contours(os.getcwd()+contour_file)
+	
+
 	if contour_type == "automatic":
-		c = contour_bias
+		spacing = contour_bias
 		n = 7 #number of contours
-		ub = np.max(data) #- (p-1)/(n)
-		lb = np.min(data) #+ (p-1)/(n)
-		spacing = c
+		ub = np.max(contour_data) 
+		lb = np.min(contour_data) 
 		def level_func(lb, ub, n, spacing=1.1):
 			span = (ub-lb)
 			dx = 1.0 / (n-1)
 			return [lb + (i*dx)**spacing*span for i in range(n)]
 		levels=level_func(lb, ub, n, spacing=float(c))
-		ax.contour(data, levels=levels, colors='white', alpha=0.5)
+		ax.contour(contour_data, levels=levels, colors='white', alpha=0.5)
 	if contour_type == "defined":
 		sigma_levels=np.array(contour_levels)
-		rms=np.sqrt(np.mean(np.square(data)))
+		rms=np.sqrt(np.mean(np.square(contour_data)))
 		levels=rms*sigma_levels
 		print('Sigma Levels for contour are: ', levels)
-		ax.contour(data, levels=levels, colors='white', alpha=0.5)
-	plt.show()
-	if outputfile != False:
-		plt.savefig(os.getcwd()+outputfile)
-		
+		ax.contour(contour_data, levels=levels, colors='white', alpha=0.5)
+
 
 def em():
 	S=import_fits(inputfile, d_range)
@@ -138,11 +176,6 @@ def em():
 	cbar.set_label('Emission Measure')
 	plt.show()
 	
-
-
-
-
-
 
 result=image_plot(inputfile, d_range, contour_type, outputfile)
 
