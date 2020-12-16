@@ -6,6 +6,7 @@ from astropy.io import fits
 import astropy.units as u
 import math as m
 import os
+from astropy.coordinates import SkyCoord
 import sys, getopt
 from astropy.wcs import WCS
 from matplotlib import cm	
@@ -55,7 +56,7 @@ def jy_beam_MJy_sr(data, header):
 def import_fits(filename, d_range):
 	"""Imports a FITS radio image from CASA pipeline and returns the image array in units of MJy/sr and the header"""
 	
-	fits_image_filename = os.getcwd()+'/fits/'+filename
+	fits_image_filename = filename
 	with fits.open(fits_image_filename) as hdul:
 		data=hdul[0].data
 	header = fits.getheader(fits_image_filename)
@@ -89,8 +90,8 @@ def clip(array, d_range):
 	"""Clips values outside of the data range, replaces them with max and min values"""
 	
 
-	array[(array < np.float32(d_range[0]))] = np.nan
-	array[(array > np.float32(d_range[1]))] = np.nan
+	array[(array < np.float32(d_range[0]))] = d_range[0]
+	array[(array > np.float32(d_range[1]))] = d_range[1]
 	
 	array=mask(array)
 	
@@ -108,7 +109,6 @@ def image_plot(inputfile, d_range, outputfile):
 		beam = Beam.from_fits_header(hrd)
 		
 
-
 	norm = ImageNormalize(data, interval=MinMaxInterval(), stretch=SqrtStretch())
 
 	figure=plt.figure(num=1)
@@ -118,14 +118,18 @@ def image_plot(inputfile, d_range, outputfile):
 		ax=figure.add_subplot(111, projection=wcs, slices=('x','y'))
 		
 
-	main_image=ax.imshow(X=data, cmap='plasma', origin='lower', norm=norm, vmax=np.max(data)- 5 , vmin=np.min(data))
+	main_image=ax.imshow(X=data, cmap='plasma', origin='lower', norm=norm, vmax=np.max(data) , vmin=np.min(data))
 	cbar=figure.colorbar(main_image)
 	
 	if hrd['TELESCOP'] == 'Spitzer':
 		ax.invert_xaxis()
 		ax.invert_yaxis()
 		
-	ax.set_xlabel('Right Ascension J2000')
+
+	coord = SkyCoord('23h23m37s +61:04, frame='J200')
+		
+		
+	ax.set_xlabel('Right Ascension J200')
 	ax.set_ylabel('Declination J2000')
 	cbar.set_label('Surface Brigthness (MJy/Sr)')
 	
@@ -145,7 +149,7 @@ def image_plot(inputfile, d_range, outputfile):
 def import_contours(filename):
 	"""Imports a FITS radio image from CASA pipeline, and coverts units to MJy/sr if not already in those units."""
 	
-	contour_fits = os.getcwd()+'/fits/'+filename
+	contour_fits = filename
 	with fits.open(contour_fits) as hdul:
 		data=hdul[0].data
 	header = fits.getheader(contour_fits)

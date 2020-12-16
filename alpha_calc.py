@@ -19,22 +19,23 @@ from astropy.io import fits
 
 
 images = [
-'/fits/ngc7635_10-11_wide_g0.5_briggs1.050iter_inter.image.5sigmasked.fits',
-'/fits/ngc7635_4-5_wide_g0.5_briggs1.050iter_inter.image.5sigmasked.fits',
-'/fits/ngc7635_5-6_wide_g0.5_briggs1.050iter_inter.image.5sigmasked.fits',
-'/fits/ngc7635_6-7_wide_g0.5_briggs1.050iter_inter.image.5sigmasked.fits',
-'/fits/ngc7635_8-9_wide_g0.5_briggs1.050iter_inter.image.5sigmasked.fits',
-'/fitsngc7635_9-10_wide_g0.5_briggs1.050iter_inter.image.5sigmasked.fits'
+os.getcwd()+'/fits/ngc7635_4-5_wide_g0.5_briggs1.050iter_inter.image.5sigmasked.fits',
+os.getcwd()+'/fits/ngc7635_5-6_wide_g0.5_briggs1.050iter_inter.image.5sigmasked.fits',
+os.getcwd()+'/fits/ngc7635_6-7_wide_g0.5_briggs1.050iter_inter.image.5sigmasked.fits',
+os.getcwd()+'/fits/ngc7635_8-9_wide_g0.5_briggs1.050iter_inter.image.5sigmasked.fits',
+os.getcwd()+'/fits/ngc7635_9-10_wide_g0.5_briggs1.050iter_inter.image.5sigmasked.fits',
+os.getcwd()+'/fits/ngc7635_10-11_wide_g0.5_briggs1.050iter_inter.image.5sigmasked.fits'
 ]
 
+
 rms = [
-0.00025, # 4-5
-0.00025, # 5-6
-0.0002, # 6-7
-6e-5, # 7-8
-0.00012, # 8-9
-6e-5, # 9-10
-#0.00013, # 10-11
+0.0001, # 4-5
+0.00015, # 5-6
+0.00013, # 6-7
+#0.0001, # 7-8
+0.0001, # 8-9
+0.0001, # 9-10
+0.0001, # 10-11
 #5e-5 # 11-12
 ]
 
@@ -56,54 +57,65 @@ def em_mes(nu,s0):
   return (s0/tau_nu2_T_em*1e-23).value
   
 
-regions = open('left.reg')
+regions = open('alpha_regions.txt', 'r')
+print regions
 
 
 for reg in regions.readlines():
-  
-  if '#' in reg: continue
 
+  if '#' in reg: continue
   fluxes = []
   freqs  = []
   yerr   = []
   em     = []
   for im in images:
+  
+     header = fits.getheader(im)
+     
+		
      bmaj  = imhead(im,mode='get',hdkey='beammajor')['value']*u.arcsec
      bmin  = imhead(im,mode='get',hdkey='beamminor')['value']*u.arcsec
      equiv = jyb_to_mjsr(bmin,bmaj)
-
      try:
-       fluxes.append(imstat(im,region=reg[:-35])['mean'][0]*equiv) #box='1250,1290,1290,1310'
+       fluxes.append(imstat(im,region=reg)['mean'][0]*equiv) #box='1250,1290,1290,1310'
        yerr.append(rms[images.index(im)]*equiv)
-       freqs.append(imhead(imagename=im,mode='get',hdkey='crval4')['value']/1e9)
+       freqs.append(header['RESTFRQ']/1e9)
+       #freqs.append(imhead(imagename=im,mode='get',hdkey='crval4')['value']/1e9)
        em.append(em_mes(freqs[-1],fluxes[-1]))
      except:
        continue
 
-  area = (reg.split(',')[-3])
+	
+  #area = (reg.split(',')[-3])
   
-  data_all = pd.DataFrame({'Frequencies (GHz)':np.round(freqs,3),
-  		'Fluxes (MJy sr-1)':np.round(fluxes,3), 'RMS (Jy sr-1)': np.round(yerr,3) , 'EM (pc cm-6)': np.round(em,3)},columns=['Frequencies (GHz)',
-  		'Fluxes (MJy sr-1)', 'RMS (Jy sr-1)', 'EM (pc cm-6)'])
-  print(area)
-  print(data_all.to_latex(index=False))
+  data_all = pd.DataFrame({'Frequencies (GHz)':np.round(freqs,3), 'Fluxes (MJy sr-1)':np.round(fluxes,3),
+                           'RMS (Jy sr-1)': np.round(yerr,3) , 'EM (pc cm-6)': np.round(em,3)},
+                           columns=['Frequencies (GHz)', 'Fluxes (MJy sr-1)', 'RMS (Jy sr-1)', 'EM (pc cm-6)'])
   
+  
+  #print(area)
+  #print(data_all)
+  
+  #fig=plt.figure()
+  #ax=fig.add_subplot(111)
+  #ax.scatter(freqs, fluxes)
+  #plt.show()
+  
+  
+  
+
   coef, cov = curve_fit(s_nu,freqs,fluxes,sigma=yerr,absolute_sigma=True)    #cf(f,xdata,ydata) 
   s0        = coef[0] 
   freq_err  = np.sqrt(cov[0,0]) # [[sxx sxy][syx syy]]
   alpha     = coef[1]
   alpha_err = np.sqrt(cov[1,1])
- 
   
   
   lgfr  = np.log10(np.asarray(freqs))
   lgfl  = np.log10(np.asarray(fluxes))
-  #w     = 1./np.asarray(yerr)
-  #z_all = np.polyfit(lgfr,lgfl,1,w=w,cov=True) 
-  #z     = z_all[0] # y = z[1]+z[0]*x - returns highest power first
-  #cov   = z_all[1] 
+
   
-  y  = s_nu(freqs,s0,alpha) #np.log10(s0)+alpha*lgfr #log(s0*nu**alpha)
+  y  = s_nu(freqs,s0,alpha) 
   
   yerr_fixed = np.array(yerr)
   yerr_fixed[yerr>=y] = y[yerr>=y]*.9999 # fix the values that are way too large 
@@ -123,9 +135,9 @@ for reg in regions.readlines():
   ax.set_xscale("log"); ax.set_yscale("log",nonposy="clip")
   
   ax.errorbar(freqs,fluxes,
-   	yerr=yerr_fixed,
-  	xerr=0.5,
-  	fmt='r+',label='data')
+  yerr=yerr_fixed,
+  xerr=0.5,
+  fmt='r+',label='data')
   	
   ax.plot(freqs,y,label= r'$\alpha$'+'='+str(round(coef[1],2))+' +/-'+str(round(alpha_err,2))) 
   
@@ -142,8 +154,7 @@ for reg in regions.readlines():
   fp.set_size('x-small')
   plt.legend(title=area,#bbox_to_anchor=(1.007,1.14),
   	loc='lower right',prop=fp,frameon=False)
-  plt.savefig('low_log_plot'+area+'.png'); plt.close()
-  #plt.show()
-
+  
+  plt.show()
   
 
