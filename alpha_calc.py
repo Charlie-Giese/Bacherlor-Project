@@ -14,29 +14,42 @@ import astropy.units as u
 from astropy.constants import c, k_B
 from astropy.wcs import WCS
 from astropy.io import fits
+from radio_beam import Beam
+from astropy.visualization import (MinMaxInterval, SqrtStretch,
+                                   ImageNormalize)
 
 
 
 
 images = [
-'alpha_fits/BN_4_5smoothed.fits',
-'alpha_fits/BN_5_6smoothed.fits',
-'alpha_fits/BN_6_7smoothed.fits',
-'alpha_fits/BN_7_8smoothed.fits',
-'alpha_fits/BN_8_9smoothed.fits',
-'alpha_fits/BN_9_10smoothed.fits',
-'alpha_fits/BN_10_11smoothed.fits'
+#'alpha_fits/BN_4_5smoothed.fits',
+#'alpha_fits/BN_5_6smoothed.fits',
+#'alpha_fits/BN_6_7smoothed.fits',
+#'alpha_fits/BN_7_8smoothed.fits',
+#'alpha_fits/BN_8_9smoothed.fits',
+#'alpha_fits/BN_9_10smoothed.fits',
+#'alpha_fits/BN_10_11smoothed.fits',
+'fits/I2330P60.fits',
+'alpha_fits/4-5_45smoothed.fits',
+'alpha_fits/5-6_45smoothed.fits',
+'alpha_fits/6-7_45smoothed.fits',
+'alpha_fits/7-8_45smoothed.fits'
 ]
 
 
 rms = [
-0.0001, # 4-5
-0.00015, # 5-6
-0.00013, # 6-7
-0.0001, # 7-8
-0.0001, # 8-9
-0.0001, # 9-10
-0.0001, # 10-11
+#0.0001, # 4-5
+#0.00015, # 5-6
+#0.00013, # 6-7
+#0.0001, # 7-8
+#0.0001, # 8-9
+#0.0001, # 9-10
+#0.0001, # 10-11
+0.00065, #NVSS
+0.0001, # 4-5 smoothed
+0.00015, # 5-6 smoothed
+0.00013, # 6-7 smoothed
+0.0001, # 7-8 smoothed
 ]
 
 
@@ -57,7 +70,7 @@ def em_mes(nu,s0):
   return (s0/tau_nu2_T_em*1e-23).value
 
 
-regions = open('alpha_regions.txt', 'r')
+regions = open('regions.reg', 'r')
 print regions
 
 
@@ -69,6 +82,7 @@ for reg in regions.readlines():
   yerr   = []
   em     = []
   for im in images:
+     imstat(im,region=reg)
 
      header = fits.getheader(im)
 
@@ -79,27 +93,24 @@ for reg in regions.readlines():
      try:
        fluxes.append(imstat(im,region=reg)['mean'][0]*equiv) #box='1250,1290,1290,1310'
        yerr.append(rms[images.index(im)]*equiv)
-       freqs.append(header['RESTFRQ']/1e9)
+       if header['CTYPE3'] == 'FREQ':
+	     freqs.append(header['CRVAL3']/1e9)
+       elif header['CTYPE4'] == 'FREQ':
+         freqs.append(header['CRVAL4']/1e9)
        #freqs.append(imhead(imagename=im,mode='get',hdkey='crval4')['value']/1e9)
        em.append(em_mes(freqs[-1],fluxes[-1]))
      except:
        continue
 
 
-  #area = (reg.split(',')[-3])
+
+  print fluxes
+
 
   data_all = pd.DataFrame({'Frequencies (GHz)':np.round(freqs,3), 'Fluxes (MJy sr-1)':np.round(fluxes,3),
                            'RMS (Jy sr-1)': np.round(yerr,3) , 'EM (pc cm-6)': np.round(em,3)},
                            columns=['Frequencies (GHz)', 'Fluxes (MJy sr-1)', 'RMS (Jy sr-1)', 'EM (pc cm-6)'])
 
-
-  #print(area)
-  #print(data_all)
-
-  #fig=plt.figure()
-  #ax=fig.add_subplot(111)
-  #ax.scatter(freqs, fluxes)
-  #plt.show()
 
 
 
@@ -150,51 +161,3 @@ for reg in regions.readlines():
   ax.set_ylabel('Surface Brightness (MJy/sr)')
 
   plt.show()
-
-
-
-
-"""
-  y  = s_nu(freqs,s0,alpha)
-
-  yerr_fixed = np.array(yerr)
-
-  yerr_fixed[yerr>=y] = y[yerr>=y]*.9999 # fix the values that are way too large
-
-  ypm = s_nu(freqs,coef[0]+freq_err,coef[1]-alpha_err)
-  ypp = s_nu(freqs,coef[0]+freq_err,coef[1]+alpha_err)
-  yp  = np.maximum(ypm,ypp)
-
-  ymp = s_nu(freqs,coef[0]-freq_err,coef[1]+alpha_err)
-  ymm = s_nu(freqs,coef[0]-freq_err,coef[1]-alpha_err)
-  ym  = np.minimum(ymp,ymm)
-
-
-  #print('freq:',lgfr,'fluxes:',lgfl,'yerr:',yerr,'fit:',y)
-  fig = plt.figure()
-  ax  = plt.axes()
-  ax.set_xscale("log"); ax.set_yscale("log",nonposy="clip")
-
-  ax.errorbar(freqs,fluxes,
-  yerr=yerr_fixed,
-  xerr=0.5,
-  fmt='r+',label='data')
-
-  ax.plot(freqs,y,label= r'$\alpha$'+'='+str(round(coef[1],2))+' +/-'+str(round(alpha_err,2)))
-
-  ax.plot(freqs,yp,'g--')
-  ax.plot(freqs,ym,'g--')
-  ax.fill_between(freqs,yp,ym,facecolor='gray',alpha=0.15)
-
-  ax.set_xlim([4.4,11.6])
-  ax.set_ylim([1e-5,1e-2])
-  ax.set_ylabel(r'$F$ (Jy)')
-  ax.set_xlabel(r'$\nu$ (GHz)')
-  #ax.set_title()
-  fp = FontProperties()
-  fp.set_size('x-small')
-  #plt.legend(title=area,#bbox_to_anchor=(1.007,1.14),
-  	#loc='lower right',prop=fp,frameon=False)
-
-  plt.show()
-"""
