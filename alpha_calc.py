@@ -71,7 +71,7 @@ def em_mes(nu,s0):
 
 
 regions = open('regions.reg', 'r')
-print regions
+
 
 
 for reg in regions.readlines():
@@ -82,14 +82,18 @@ for reg in regions.readlines():
   yerr   = []
   em     = []
   for im in images:
-     imstat(im,region=reg)
+
 
      header = fits.getheader(im)
 
-
-     bmaj  = imhead(im,mode='get',hdkey='beammajor')['value']*u.arcsec
-     bmin  = imhead(im,mode='get',hdkey='beamminor')['value']*u.arcsec
+     if header['OBSERVER'] == 'NVSS GRP':
+       bmaj = 45.*u.arcsec
+       bmin = 45.*u.arcsec
+     else:
+       bmaj  = imhead(im,mode='get',hdkey='beammajor')['value']*u.arcsec
+       bmin  = imhead(im,mode='get',hdkey='beamminor')['value']*u.arcsec
      equiv = jyb_to_mjsr(bmin,bmaj)
+
      try:
        fluxes.append(imstat(im,region=reg)['mean'][0]*equiv) #box='1250,1290,1290,1310'
        yerr.append(rms[images.index(im)]*equiv)
@@ -104,7 +108,6 @@ for reg in regions.readlines():
 
 
 
-  print fluxes
 
 
   data_all = pd.DataFrame({'Frequencies (GHz)':np.round(freqs,3), 'Fluxes (MJy sr-1)':np.round(fluxes,3),
@@ -121,7 +124,7 @@ for reg in regions.readlines():
   alpha     = coef[1]
   alpha_err = np.sqrt(cov[1,1])
 
-  print(alpha)
+  print 'Spectral Index is:', alpha
 
 
   y  = s_nu(freqs,s0,alpha)
@@ -147,7 +150,7 @@ for reg in regions.readlines():
 
   ax.fill_between(freqs,yp,ym,facecolor='gray',alpha=0.15)
 
-  ax.set_xlim([2,12.6])
+  #ax.set_xlim([2,12.6])
   #ax.set_ylim([0.1, 8])
 
 
