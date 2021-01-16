@@ -143,15 +143,15 @@ for reg in regions.readlines():
   ax = fig.add_subplot(111)
   ax.set_xscale("log"); ax.set_yscale("log")
   #ax.scatter(freqs, fluxes)
-  ax.plot(freqs, y, c='k', label=r'$\alpha$'+'='+str(round(coef[1],2))+' +/-'+str(round(alpha_err,2)))
+  ax.plot(freqs, y, c='k', label=r'$\alpha$'+'='+str(round(coef[1],2))+' +/-'+str(round(alpha_err,3)))
 
   ax.plot(freqs,yp,'g--')
   ax.plot(freqs,ym,'g--')
 
   ax.fill_between(freqs,yp,ym,facecolor='gray',alpha=0.15)
 
-  #ax.set_xlim([2,12.6])
-  #ax.set_ylim([0.1, 8])
+  ax.set_xlim([3.5,10**1.1])
+  ax.set_ylim([10, 16])
 
 
   ax.errorbar(freqs,fluxes,
@@ -159,7 +159,7 @@ for reg in regions.readlines():
   xerr=0.5,
   fmt='r+',label='data')
 
-  plt.legend(loc='lower right')
+  plt.legend(loc='lower left')
   ax.set_xlabel('Frequency (GHz)')
   ax.set_ylabel('Surface Brightness (MJy/sr)')
 

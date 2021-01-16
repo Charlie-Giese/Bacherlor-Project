@@ -8,7 +8,7 @@ import math as m
 import os
 import sys, getopt
 from astropy.wcs import WCS
-from matplotlib import cm	
+from matplotlib import cm
 from astropy.visualization import (MinMaxInterval, SqrtStretch,
                                    ImageNormalize)
 import argparse
@@ -22,7 +22,7 @@ args = parser.parse_args()
 
 inputfile=args.inputfile
 
- 
+
 
 
 def jy_beam_MJy_sr(data, header):
@@ -42,33 +42,33 @@ def jy_beam_MJy_sr(data, header):
 
 def import_fits(filename):
 	"""Imports a FITS radio image from CASA pipeline and returns the image array in units of MJy/sr and the header"""
-	
+
 	fits_image_filename = os.getcwd()+'/fits/'+filename
 	with fits.open(fits_image_filename) as hdul:
 		data=hdul[0].data
 	header = fits.getheader(fits_image_filename)
-	
+
 	ndims = data.ndim
 	if ndims == 4:
 		image=data[0,0,:,:]
 	else:
 		image=data
-	
+
 	ar_u = jy_beam_MJy_sr(image, header)
 	ar_c=mask(ar_u)
-	
+
 	return ar_c,header
 
 
 def mask(array):
 	"""Masks the array so invalid values are discarded"""
-	
+
 	unmasked=np.array(array, dtype=np.float32)
 	masked=np.ma.masked_invalid(unmasked)
 	output=masked
 	return output
 
-	
+
 def optical_depth(inputfile):
 
 	SB=import_fits(inputfile)[0]
@@ -81,24 +81,24 @@ def optical_depth(inputfile):
 
 
 	tau = - np.log( 1 - (c**2 *SB_erg)/(2*k_b*T*(nu**2)))
-	
-	
+
+
 	hrd = import_fits(inputfile)[1]
 	wcs = WCS(hrd)
-	
+
 
 	norm = ImageNormalize(emission_measure, interval=MinMaxInterval(),
                       stretch=SqrtStretch())
-	
-	fig=plt.figure(1) 
+
+	fig=plt.figure(1)
 	ax=fig.add_subplot(111, projection=wcs, slices=('x','y',0,0))
-	em_map=ax.imshow(tau, origin='lower', cmap='plasma', norm=norm)
+	em_map=ax.imshow(tau, origin='lower', cmap='viridis', norm=norm)
 	ax.set_xlabel('Right Ascension')
 	ax.set_ylabel('Declination')
 	cbar=fig.colorbar(em_map)
 	cbar.set_label('Optical Depth, kpc cm^-6')
 	plt.show()
-		
+
 
 def em(inputfile):
 	S=import_fits(inputfile)[0]
@@ -109,45 +109,30 @@ def em(inputfile):
 	c=3e10 #speed of light in cgs
 	k_b=1.38e-16 #boltzmann constant in cgs
 	emission_measure = (-1 *np.log(1 - ((S_erg*c**2)/(2*k_b*T*(v**2)))) * 1/(3.28e-7) * (T/1e4)**1.35 * (v/1e9)**2.1)/(1e3)
-	
-	
-	
+
+
+
 	hrd = import_fits(inputfile)[1]
 	wcs = WCS(hrd)
-	
+
 
 	norm = ImageNormalize(emission_measure, interval=MinMaxInterval(),
                       stretch=SqrtStretch())
-	
-	fig=plt.figure(1) 
+
+	fig=plt.figure(1)
 	ax=fig.add_subplot(111, projection=wcs, slices=('x','y',0,0))
-	em_map=ax.imshow(emission_measure, origin='lower', cmap='plasma', norm=norm)
+	em_map=ax.imshow(emission_measure, origin='lower', cmap='viridis', norm=norm)
 	ax.set_xlabel('Right Ascension')
 	ax.set_ylabel('Declination')
 	cbar=fig.colorbar(em_map)
 	cbar.set_label('Emission Measure, kpc cm^-6')
 	plt.show()
-	
-	
 
-	
-	
-	
-	
+
+
+
+
+
+
 emission_measure=em(inputfile)
 tau=optical_depth(inputfile)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

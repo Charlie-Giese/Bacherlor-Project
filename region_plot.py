@@ -12,9 +12,13 @@ import argparse
 from radio_beam import Beam
 from astropy.visualization import (MinMaxInterval, SqrtStretch,
                                    ImageNormalize)
+from astropy.visualization.wcsaxes import Quadrangle
 from matplotlib.patches import Rectangle
 
-fits_image_filename = 'fits/ngc7635_Xband_wide_g0.5_briggs1.0_1000iter_interactive.image.tt0.fits'
+
+
+
+fits_image_filename = 'fits/ngc7635_g0.5_briggs1.0_nsig5.image.tt0.fits'
 
 with fits.open(fits_image_filename) as hdul:
 	data=hdul[0].data[0,0,:,:]
@@ -32,15 +36,30 @@ ax=figure.add_subplot(111, projection=wcs, slices=('x','y', 0, 0))
 main_image=ax.imshow(X=SB_masked, cmap='plasma', origin='lower', norm=norm)#, vmax=np.max(data) , vmin=np.min(data))
 cbar=figure.colorbar(main_image)
 
-r = Rectangle((355*u.degree, +61.12*u.degree), 1.397*u.arcmin , 0.63*u.arcmin,
-              label='Rectangle', edgecolor='red', facecolor='none', linestyle='--',
-              transform=ax.get_transform('icrs'))
-ax.add_patch(r)
+regions = open('regions_degrees.txt', 'r')
+
+i=0
+labels=['a','b','c','d','e']
+
+for reg in regions.readlines():
+	region = reg.split(",")
+	x = (float(region[0]) - float(region[2])/2)*u.degree
+	y = (float(region[1]) - float(region[3])/2)*u.degree
+	w = float(region[3])*u.degree
+	h = float(region[2])*u.degree
 
 
+	r = Quadrangle	((x, y), w, h,
+              label='labels[i]', edgecolor='white', facecolor='none', linestyle='-',
+              transform=ax.get_transform('fk5'))
+	ax.add_patch(r)
+
+	plt.text(float(region[0]), float(region[1]), labels[i], transform=ax.get_transform('fk5'), c='w')
+	i+=1
 
 ax.set_xlabel('Right Ascension J200')
 ax.set_ylabel('Declination J2000')
 cbar.set_label('Surface Brigthness (MJy/Sr)')
+
 
 plt.show()
