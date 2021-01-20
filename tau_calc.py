@@ -22,19 +22,17 @@ from astropy.visualization import (MinMaxInterval, SqrtStretch,
 
 
 images = [
-'alpha_fits/BN_4_5smoothed.fits',
-'alpha_fits/BN_5_6smoothed.fits',
-'alpha_fits/BN_6_7smoothed.fits',
-'alpha_fits/BN_7_8smoothed.fits',
-'alpha_fits/BN_8_9smoothed.fits',
-'alpha_fits/BN_9_10smoothed.fits',
-'alpha_fits/BN_10_11smoothed.fits',
-#'fits/I2330P60.fits',
-#'alpha_fits/4-5_45smoothed.fits',
-#'alpha_fits/5-6_45smoothed.fits',
-#'alpha_fits/6-7_45smoothed.fits',
-#'alpha_fits/7-8_45smoothed.fits'
+'fits/I2330P60.fits',
+'smoothed_fits/45arcsec/4-5_45smoothed.fits',
+'smoothed_fits/45arcsec/5-6_45smoothed.fits',
+'smoothed_fits/45arcsec/6-7_45smoothed.fits',
+'smoothed_fits/45arcsec/7-8_45smoothed.fits',
+'smoothed_fits/45arcsec/8-9_45smoothed.fits',
+'smoothed_fits/45arcsec/9-10_45smoothed.fits',
+'smoothed_fits/45arcsec/10-11_45smoothed.fits',
+'fits/I2330P60.fits',
 ]
+
 
 
 rms = [
@@ -45,11 +43,7 @@ rms = [
 0.0001, # 8-9
 0.0001, # 9-10
 0.0001, # 10-11
-#0.00065, #NVSS
-#0.0001, # 4-5 smoothed
-#0.00015, # 5-6 smoothed
-#0.00013, # 6-7 smoothed
-#0.0001, # 7-8 smoothed
+0.00065, #NVSS
 ]
 
 
@@ -68,7 +62,7 @@ def s_nu(nu,s0,alpha): # f(xdata,a0,a1)
 
 def em_mes(S, nu):
 	T=8000 #K
-	S_erg = S * 10**-17	 #this is the surface brightness in units of ergs/cm^2/sr
+	S_erg = S * 1e-17	 #this is the surface brightness in units of ergs/cm^2/sr
 	c=3e10 #speed of light in cgs
 	k_b=1.38e-16 #boltzmann constant in cgs
 	emission_measure = (-1 *np.log(1 - ((S_erg*c**2)/(2*k_b*T*((nu*1e9)**2)))) * 1/(3.28e-7) * (T/1e4)**1.35 * (nu)**2.1)/(1e3)
@@ -81,44 +75,42 @@ def opt_dep(nu, S):
 	return tau
 
 
-regions = open('regions.reg', 'r')
+region = open('tau_region.reg', 'r')
 
-for reg in regions.readlines():
 
-  if '#' in reg: continue
-  fluxes = []
-  freqs  = []
-  yerr   = []
-  em     = []
-  tau	 = []
-  for im in images:
+fluxes = []
+freqs  = []
+flux_err   = []
+em     = []
+tau	 = []
 
-     header = fits.getheader(im)
+for im in images:
 
-     if header['OBSERVER'] == 'NVSS GRP':
-       bmaj = 45.*u.arcsec
-       bmin = 45.*u.arcsec
-     else:
-       bmaj  = imhead(im,mode='get',hdkey='beammajor')['value']*u.arcsec
-       bmin  = imhead(im,mode='get',hdkey='beamminor')['value']*u.arcsec
-     equiv = jyb_to_mjsr(bmin,bmaj)
+  header = fits.getheader(im)
 
-     try:
-       fluxes.append(imstat(im,region=reg)['mean'][0]*equiv) #box='1250,1290,1290,1310'
-       yerr.append(rms[images.index(im)]*equiv)
-       if header['CTYPE3'] == 'FREQ':
-	     freqs.append(header['CRVAL3']/1e9)
-       elif header['CTYPE4'] == 'FREQ':
-         freqs.append(header['CRVAL4']/1e9)
-       em.append(em_mes(freqs[-1],fluxes[-1]))
-       tau.append(opt_dep(freqs[-1], fluxes[-1]))
-     except:
-       continue
+
+  if header['OBSERVER'] == 'NVSS GRP':
+    bmaj = 45.*u.arcsec
+    bmin = 45.*u.arcsec
+  else:
+    bmaj  = imhead(im,mode='get',hdkey='beammajor')['value']*u.arcsec
+    bmin  = imhead(im,mode='get',hdkey='beamminor')['value']*u.arcsec
+  equiv = jyb_to_mjsr(bmin,bmaj)
 
 
 
+  fluxes.append(imstat(im,region=region)['mean'][0]*equiv) #box='1250,1290,1290,1310'
+  flux_err.append(rms[images.index(im)]*equiv)
+  if header['CTYPE3'] == 'FREQ':
+    freqs.append(header['CRVAL3']/1e9)
+  elif header['CTYPE4'] == 'FREQ':
+    freqs.append(header['CRVAL4']/1e9)
+  em.append(em_mes(freqs[-1],fluxes[-1]))
+  tau.append(opt_dep(freqs[-1], fluxes[-1]))
 
-  data_all = pd.DataFrame({'Frequencies (GHz)':np.round(freqs,3), 'Fluxes (MJy sr-1)':np.round(fluxes,3),
+
+
+data_all = pd.DataFrame({'Frequencies (GHz)':np.round(freqs,3), 'Fluxes (MJy sr-1)':np.round(fluxes,3),
                            'RMS (Jy sr-1)': np.round(yerr,3) , 'EM (pc cm-6)': np.round(em,3),
 						   'Optical Depth': np.round(tau, 3)},
                            columns=['Frequencies (GHz)', 'Fluxes (MJy sr-1)', 'RMS (Jy sr-1)', 'EM (pc cm-6)'])
@@ -126,50 +118,25 @@ for reg in regions.readlines():
 
 
 
-
-  #coef, cov = curve_fit(s_nu,freqs,fluxes,sigma=yerr,absolute_sigma=True)    #cf(f,xdata,ydata)
-  #s0        = coef[0]
-  #freq_err  = np.sqrt(cov[0,0]) # [[sxx sxy][syx syy]]
-  #alpha     = coef[1]
-  #alpha_err = np.sqrt(cov[1,1])
-
-  #print 'Spectral Index is:', alpha
+ar=np.array(flux_err)
+ar2=np.array(freqs)
+yerr=opt_dep(ar2, ar)
+xerr=0.5
 
 
-  #y  = s_nu(freqs,s0,alpha)
-  #yerr_fixed = np.array(yerr) * 3
 
+fig = plt.figure()
+ax = fig.add_subplot(111)
+#ax.set_xscale("log");
+ax.set_yscale("log")
+ax.scatter(freqs, tau)
 
-  #ypm = s_nu(freqs,coef[0]+freq_err,coef[1]-alpha_err)
-  #ypp = s_nu(freqs,coef[0]+freq_err,coef[1]+alpha_err)
-  #yp  = np.maximum(ypm,ypp)
+ax.errorbar(freqs,tau,
+yerr=yerr,
+xerr=0.5,
+fmt='r+',label='data')
 
-  #ymp = s_nu(freqs,coef[0]-freq_err,coef[1]+alpha_err)
-  #ymm = s_nu(freqs,coef[0]-freq_err,coef[1]-alpha_err)
-  #ym  = np.minimum(ymp,ymm)
-
-  fig = plt.figure()
-  ax = fig.add_subplot(111)
-  ax.set_xscale("log"); ax.set_yscale("log")
-  ax.scatter(freqs, tau)
-  #ax.plot(freqs, y, c='k', label=r'$\alpha$'+'='+str(round(coef[1],2))+' +/-'+str(round(alpha_err,3)))
-
-  #ax.plot(freqs,yp,'g--')
-  #ax.plot(freqs,ym,'g--')
-
-  #ax.fill_between(freqs,yp,ym,facecolor='gray',alpha=0.15)
-
-  #ax.set_xlim([3.5,10**1.1])
-  #ax.set_ylim([10, 16])
-
-
-  #ax.errorbar(freqs,fluxes,
-  #yerr=yerr_fixed,
-  #xerr=0.5,
-  #fmt='r+',label='data')
-
-  #plt.legend(loc='lower left')
-  ax.set_xlabel('Frequency (GHz)')
-  ax.set_ylabel('Optical Depth')
-
-  plt.show()
+ax.set_xlabel('Frequency (GHz)')
+ax.set_ylabel('Optical Depth')
+#plt.legend(loc='lower left')
+plt.show()
