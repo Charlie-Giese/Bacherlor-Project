@@ -22,34 +22,33 @@ from astropy.visualization import (MinMaxInterval, SqrtStretch,
 
 
 images = [
-#'alpha_fits/BN_4_5smoothed.fits',
-#'alpha_fits/BN_5_6smoothed.fits',
-#'alpha_fits/BN_6_7smoothed.fits',
-#'alpha_fits/BN_7_8smoothed.fits',
-#'alpha_fits/BN_8_9smoothed.fits',
-#'alpha_fits/BN_9_10smoothed.fits',
-#'alpha_fits/BN_10_11smoothed.fits',
-'fits/I2330P60.fits',
-'alpha_fits/4-5_45smoothed.fits',
-'alpha_fits/5-6_45smoothed.fits',
-'alpha_fits/6-7_45smoothed.fits',
-'alpha_fits/7-8_45smoothed.fits'
+#'smoothed_fits/standard/unmasked/4-5_smoothed.fits',
+#'smoothed_fits/standard/unmasked/5-6_smoothed.fits',
+#'smoothed_fits/standard/unmasked/6-7_smoothed.fits',
+#'smoothed_fits/standard/unmasked/7-8_smoothed.fits',
+#'smoothed_fits/standard/unmasked/8-9_smoothed.fits',
+#'smoothed_fits/standard/unmasked/9-10_smoothed.fits',
+#'smoothed_fits/standard/unmasked/10-11_smoothed.fits',
+'smoothed_fits/45arcsec/unmasked/4-5_45smoothed.fits',
+'smoothed_fits/45arcsec/unmasked/5-6_45smoothed.fits',
+'smoothed_fits/45arcsec/unmasked/6-7_45smoothed.fits',
+'smoothed_fits/45arcsec/unmasked/7-8_45smoothed.fits',
+'smoothed_fits/45arcsec/unmasked/8-9_45smoothed.fits',
+'smoothed_fits/45arcsec/unmasked/9-10_45smoothed.fits',
+'smoothed_fits/45arcsec/unmasked/10-11_45smoothed.fits',
+'fits/I2330P60.fits'
 ]
 
 
 rms = [
-#0.0001, # 4-5
-#0.00015, # 5-6
-#0.00013, # 6-7
-#0.0001, # 7-8
-#0.0001, # 8-9
-#0.0001, # 9-10
-#0.0001, # 10-11
+0.0001, # 4-5
+0.00015, # 5-6
+0.00013, # 6-7
+0.0001, # 7-8
+0.0001, # 8-9
+0.0001, # 9-10
+0.0001, # 10-11
 0.00065, #NVSS
-0.0001, # 4-5 smoothed
-0.00015, # 5-6 smoothed
-0.00013, # 6-7 smoothed
-0.0001, # 7-8 smoothed
 ]
 
 
@@ -63,16 +62,31 @@ def jyb_to_mjsr(bmin,bmaj):
 def s_nu(nu,s0,alpha): # f(xdata,a0,a1)
   return s0*nu**alpha
 
-def em_mes(nu,s0):
-  t0     = 8e3       # temperature K
-  a      = 2*(k_B.cgs)*3.28*1e-7/(c.cgs)**2
-  tau_nu2_T_em = a*1e4*(t0/1e4)**(-0.35)*1e18*(nu)**(-0.1)
-  return (s0/tau_nu2_T_em*1e-23).value
+def em_mes(S, nu):
+	T=8000 #K
+	S_erg = S * 1e-17	 #this is the surface brightness in units of ergs/cm^2/sr
+	c=3e10 #speed of light in cgs
+	k_b=1.38e-16 #boltzmann constant in cgs
+	emission_measure = -1. *np.log(1. - ((S_erg * c**2.)/(2.*k_b*T*((nu*1e9)**2.)))) * 1./(3.28e-7) * (T/1e4)**1.35 * (nu)**2.1
+	return emission_measure
+
+def opt_dep(nu, em):
+	t0=8e3
+	tau=3.28e-7 * (t0/1e4)**(-1.35) * (nu)**(-2.1) * em
+	return tau
 
 
 regions = open('regions.reg', 'r')
 
+titles = [
+'Region (a)',
+'Region (b)',
+'Region (c)',
+'Region (d)',
+'Region (e)',
+]
 
+i=0
 
 for reg in regions.readlines():
 
@@ -81,6 +95,7 @@ for reg in regions.readlines():
   freqs  = []
   yerr   = []
   em     = []
+  tau    = []
   for im in images:
 
 
@@ -98,11 +113,12 @@ for reg in regions.readlines():
        fluxes.append(imstat(im,region=reg)['mean'][0]*equiv) #box='1250,1290,1290,1310'
        yerr.append(rms[images.index(im)]*equiv)
        if header['CTYPE3'] == 'FREQ':
-	     freqs.append(header['CRVAL3']/1e9)
+         freqs.append(header['CRVAL3']/1e9)
        elif header['CTYPE4'] == 'FREQ':
          freqs.append(header['CRVAL4']/1e9)
        #freqs.append(imhead(imagename=im,mode='get',hdkey='crval4')['value']/1e9)
        em.append(em_mes(freqs[-1],fluxes[-1]))
+       tau.append(opt_dep(freqs[-1], em_mes(freqs[-1],fluxes[-1])))
      except:
        continue
 
@@ -148,10 +164,12 @@ for reg in regions.readlines():
   ax.plot(freqs,yp,'g--')
   ax.plot(freqs,ym,'g--')
 
+  #ax.set_yticks( [1e-2, 1e-1, 1e0, 1e1] )
+
   ax.fill_between(freqs,yp,ym,facecolor='gray',alpha=0.15)
 
-  ax.set_xlim([3.5,10**1.1])
-  ax.set_ylim([10, 16])
+  #ax.set_xlim([3.5,10**1.1])
+  #ax.set_ylim([10, 16])
 
 
   ax.errorbar(freqs,fluxes,
@@ -159,8 +177,11 @@ for reg in regions.readlines():
   xerr=0.5,
   fmt='r+',label='data')
 
-  plt.legend(loc='lower left')
+  plt.legend(loc='upper right')
   ax.set_xlabel('Frequency (GHz)')
   ax.set_ylabel('Surface Brightness (MJy/sr)')
+
+  ax.set_title(titles[i])
+  i+=1
 
   plt.show()

@@ -132,7 +132,7 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 
 
 
-	ax.set_xlabel('Right Ascension J200', fontdict=font)
+	ax.set_xlabel('Right Ascension J2000', fontdict=font)
 	ax.set_ylabel('Declination J2000', fontdict=font)
 	cbar.set_label('Surface Brigthness (MJy/Sr)', fontdict=font)
 	ra = ax.coords[0]
@@ -141,11 +141,12 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 	dec=ax.coords[1]
 	dec.set_format_unit('degree', decimal=True)
 
-	ax.set_title('8-12 GHz', fontdict=font)
+	#ax.set_title('Spitzer 24\u03BCm', fontdict=font)
+	ax.set_title('4-8 GHz, 5\u03C3 mask', fontdict=font)
 
 	if hrd['TELESCOP'] != 'Spitzer':
 		beam = Beam.from_fits_header(hrd)
-		c = SphericalCircle((350.34, 61.13)*u.degree, beam.major, edgecolor='white', facecolor='none',
+		c = SphericalCircle((350.34, 61.13)*u.degree, beam.major, edgecolor='black', facecolor='none',
 	           				transform=ax.get_transform('fk5'))
 		ax.add_patch(c)
 

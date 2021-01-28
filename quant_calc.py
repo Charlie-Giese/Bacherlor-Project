@@ -96,7 +96,15 @@ def optical_depth(inputfile):
 	ax.set_xlabel('Right Ascension')
 	ax.set_ylabel('Declination')
 	cbar=fig.colorbar(em_map)
-	cbar.set_label('Optical Depth, kpc cm^-6')
+	cbar.set_label('Optical Depth')
+
+	dims=np.shape(tau)
+	centre=(dims[0]/2., dims[1]/2.)
+	ax.set_xlim(centre[0]-300, centre[0]+300)
+	ax.set_ylim(centre[1]-300, centre[1]+300)
+
+	ax.grid(True)
+
 	plt.show()
 
 
@@ -108,7 +116,7 @@ def em(inputfile):
 	S_erg = S * 10**-17	 #this is the surface brightness in units of ergs/cm^2/sr
 	c=3e10 #speed of light in cgs
 	k_b=1.38e-16 #boltzmann constant in cgs
-	emission_measure = (-1 *np.log(1 - ((S_erg*c**2)/(2*k_b*T*(v**2)))) * 1/(3.28e-7) * (T/1e4)**1.35 * (v/1e9)**2.1)/(1e3)
+	emission_measure = (-1 *np.log(1 - ((S_erg*c**2)/(2*k_b*T*(v**2)))) * 1/(3.28e-7) * (T/1e4)**1.35 * (v/1e9)**2.1)
 
 
 
@@ -125,7 +133,15 @@ def em(inputfile):
 	ax.set_xlabel('Right Ascension')
 	ax.set_ylabel('Declination')
 	cbar=fig.colorbar(em_map)
-	cbar.set_label('Emission Measure, kpc cm^-6')
+	cbar.set_label('Emission Measure, pc cm^-6')
+
+	dims=np.shape(emission_measure)
+	centre=(dims[0]/2., dims[1]/2.)
+	ax.set_xlim(centre[0]-300, centre[0]+300)
+	ax.set_ylim(centre[1]-300, centre[1]+300)
+
+	ax.grid(True)
+
 	plt.show()
 
 
