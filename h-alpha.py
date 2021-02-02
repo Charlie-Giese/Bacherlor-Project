@@ -8,7 +8,7 @@ import sys, getopt
 from astropy.wcs import WCS
 from matplotlib import cm
 from astropy.visualization import (MinMaxInterval, SqrtStretch,
-                                   ImageNormalize)
+                                   ImageNormalize, LogStretch)
 import argparse
 from radio_beam import Beam
 
@@ -32,39 +32,34 @@ where_are_NaNs = np.isnan(data)
 data[where_are_NaNs] = 0.0
 
 equiv=header['PHOTFLAM'] * header['PHOTBW'] / header['D024ISCL']**2
-
 print(equiv)
 
-flux=data*equiv
-wl=header['PHOTPLAM']
 
-N_H = 2.7 × 10**21 #atoms cm−2
+flux=data*equiv*42545250225.0
+wl=header['PHOTPLAM'] #Angstrom
+wl_um=wl * 1e-4
+
+
+N_H = 3.944e21 #atoms cm−2
 
 A_V = N_H/(1.9e21)
+print(A_V)
 R_V=3.1
-X=1e-6/wl
+X=1/wl_um
 
-A_lambda = A_V * R_V / X
+A_lambda = A_V * X / R_V
 
+flux_true = flux * 10**(0.318 * A_V)
 
+EM_ha = flux_true / 1.17e-7
 
 wcs = WCS(header)
 
-norm = ImageNormalize(flux, interval=MinMaxInterval(), stretch=SqrtStretch())
+plot_data=EM_ha
+norm = ImageNormalize(plot_data, interval=MinMaxInterval(), stretch=LogStretch())
 
 figure=plt.figure(num=1)
 ax=figure.add_subplot(111, projection=wcs, slices=('x','y'))
-main_image=ax.imshow(X=flux, cmap='plasma', origin='lower', norm=norm, vmax=np.max(flux) , vmin=np.min(flux))
+main_image=ax.imshow(X=plot_data, cmap='plasma', origin='lower', norm=norm, vmax=3e6 , vmin=0.)
 cbar=figure.colorbar(main_image)
 plt.show()
-
-
-
-
-def em_mes(S, nu):
-	T=8000 #K
-	S_erg = S * 1e-17	 #this is the surface brightness in units of ergs/cm^2/sr
-	c=3e10 #speed of light in cgs
-	k_b=1.38e-16 #boltzmann constant in cgs
-	emission_measure = -1. *np.log(1. - ((S_erg * c**2.)/(2.*k_b*T*((nu*1e9)**2.)))) * 1./(3.28e-7) * (T/1e4)**1.35 * (nu)**2.1
-	return emission_measure

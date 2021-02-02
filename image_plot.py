@@ -11,10 +11,10 @@ import sys, getopt
 from astropy.wcs import WCS
 from matplotlib import cm
 from astropy.visualization import (MinMaxInterval, SqrtStretch,
-                                   ImageNormalize)
+                                   ImageNormalize, LogStretch)
 import argparse
 from radio_beam import Beam
-from astropy.visualization.wcsaxes import SphericalCircle
+from astropy.visualization.wcsaxes import SphericalCircle, Quadrangle
 
 parser = argparse.ArgumentParser(description='Plot an image in fits format.')
 parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
@@ -142,7 +142,7 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 	dec.set_format_unit('degree', decimal=True)
 
 	#ax.set_title('Spitzer 24\u03BCm', fontdict=font)
-	ax.set_title('4-8 GHz, 5\u03C3 mask', fontdict=font)
+	ax.set_title('4-12 GHz, 5\u03C3 mask', fontdict=font)
 
 	if hrd['TELESCOP'] != 'Spitzer':
 		beam = Beam.from_fits_header(hrd)
@@ -150,9 +150,11 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 	           				transform=ax.get_transform('fk5'))
 		ax.add_patch(c)
 
+	
 	if outputfile != False:
 		plt.savefig(os.getcwd()+'/thesis_figs/'+outputfile)
 	plt.show()
+
 
 
 result=image_plot(inputfile, d_range, imsize,  outputfile)

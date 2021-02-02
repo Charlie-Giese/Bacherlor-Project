@@ -9,10 +9,12 @@ import os
 import sys, getopt
 from astropy.wcs import WCS
 from matplotlib import cm
-from astropy.visualization import (MinMaxInterval, SqrtStretch,
+from astropy.visualization import (MinMaxInterval, LogStretch,
                                    ImageNormalize)
 import argparse
 from radio_beam import Beam
+from astropy.visualization.wcsaxes import SphericalCircle, Quadrangle
+
 
 parser = argparse.ArgumentParser(description='Calculate Emission measure and Optical depth as function of position')
 parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
@@ -93,7 +95,7 @@ def optical_depth(inputfile):
 	fig=plt.figure(1)
 	ax=fig.add_subplot(111, projection=wcs, slices=('x','y',0,0))
 	em_map=ax.imshow(tau, origin='lower', cmap='viridis', norm=norm)
-	ax.set_xlabel('Right Ascension')
+	ax.set_xlabel('Right Ascension\nJ2000')
 	ax.set_ylabel('Declination')
 	cbar=fig.colorbar(em_map)
 	cbar.set_label('Optical Depth')
@@ -103,7 +105,7 @@ def optical_depth(inputfile):
 	ax.set_xlim(centre[0]-300, centre[0]+300)
 	ax.set_ylim(centre[1]-300, centre[1]+300)
 
-	ax.grid(True)
+	#ax.grid(True)
 
 	plt.show()
 
@@ -125,12 +127,12 @@ def em(inputfile):
 
 
 	norm = ImageNormalize(emission_measure, interval=MinMaxInterval(),
-                      stretch=SqrtStretch())
+                      stretch=LogStretch())
 
 	fig=plt.figure(1)
 	ax=fig.add_subplot(111, projection=wcs, slices=('x','y',0,0))
-	em_map=ax.imshow(emission_measure, origin='lower', cmap='viridis', norm=norm)
-	ax.set_xlabel('Right Ascension')
+	em_map=ax.imshow(emission_measure, origin='lower', cmap='plasma', norm=norm, vmax=3e6, vmin=0)
+	ax.set_xlabel('Right Ascension\nJ2000')
 	ax.set_ylabel('Declination')
 	cbar=fig.colorbar(em_map)
 	cbar.set_label('Emission Measure, pc cm^-6')
@@ -140,15 +142,58 @@ def em(inputfile):
 	ax.set_xlim(centre[0]-300, centre[0]+300)
 	ax.set_ylim(centre[1]-300, centre[1]+300)
 
-	ax.grid(True)
+	ra = ax.coords[0]
+	ra.set_format_unit('degree', decimal=True)
+
+	dec=ax.coords[1]
+	dec.set_format_unit('degree', decimal=True)
+
+	#ax.grid(True)
+
+	"""This following code is only for overplotting the geometry for the density estimate"""
+
+	#point=SphericalCircle((350.178, 61.2)*u.degree, 0.001*u.degree, edgecolor='white', facecolor='white',
+	#					  transform=ax.get_transform('fk5'))
+	#ax.add_patch(point)
+
+	anchor_x= 350.138
+	anchor_y = 61.2
+	chord = Quadrangle((anchor_x, anchor_y)*u.degree, 0.08*u.degree, 0.0*u.degree, vertex_unit='degree',
+                       label='labels[i]', edgecolor='k', facecolor='none', linestyle='-',
+                       transform=ax.get_transform('fk5'))
+	#ax.scatter(anchor_x, anchor_y, transform=ax.get_transform('fk5'))
+	ax.add_patch(chord)
+	ax.text(350.168, 61.201, s='Chord', c='k', transform=ax.get_transform('fk5'))
+	axis = Quadrangle((350.178, 61.18)*u.degree, 0.*u.degree, 0.04*u.degree, vertex_unit='degree',
+	                  label='labels[i]', edgecolor='k', facecolor='none', linestyle='-',
+	                  transform=ax.get_transform('fk5'))
+	ax.add_patch(axis)
+	ax.text(350.175, 61.176, s='Axis', c='k', transform=ax.get_transform('fk5'))
 
 	plt.show()
 
 
+region=[350.138, 61.2, 0.04, 0.02]
 
 
+L=0.08 #degrees
 
+d=2993.44 # distance to nebula in pc
 
+CL=2*d*m.tan(L/2 * m.pi/180.) * m.cos(61.2 * m.pi/180) #pc, cos factor accounts
+ 													   #for fact that two points
+													   #seperated by 1 degree are
+													   #closer the higher the dec
+print(CL)
+em_val=29231.7 # pc/(cm^6)
+
+def density(value, CL):
+	x=float(em_val)/float(CL)
+	density = x**0.5 # per cubic cm:)
+	return density
+
+density=density(em, CL)
+print('Density is', density)
 
 emission_measure=em(inputfile)
 tau=optical_depth(inputfile)

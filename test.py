@@ -1,20 +1,15 @@
-from astropy.visualization import (MinMaxInterval, SqrtStretch,
-                                   ImageNormalize)
-import numpy as np
-import matplotlib.pyplot as plt
+from __future__ import print_function
+from astropy.coordinates import SkyCoord
+from dustmaps.bayestar import BayestarQuery
 
+coords = SkyCoord(180., 0., unit='deg', frame='galactic')
 
-data=np.arange(-50, 50, 1).reshape(10,10)
+# Note that below, we could use version='bayestar2017' to get the newer
+# version of the map. Note, however, that the reddening units are not
+# identical in the two versions of the map. See Green et al. (2018) for
+# an explanation of the units.
+bayestar = BayestarQuery(max_samples=2, version='bayestar2015')
 
-print(data)	
+ebv = bayestar(coords, mode='random_sample')
 
-norm = ImageNormalize(data, interval=MinMaxInterval(),
-                      stretch=SqrtStretch())
-
-plt.imshow(data, norm=norm)
-plt.colorbar()
-plt.show()
-
-plt.imshow(data)
-plt.colorbar()
-plt.show()
+print(ebv)
