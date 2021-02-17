@@ -47,6 +47,8 @@ def jy_beam_MJy_sr(data, header):
 		SB=((data*u.Jy/u.beam).to(u.MJy/u.sr, equivalencies=u.beam_angular_area(beam))).value
 	elif header['BUNIT'] == 'MJy/sr':
 		SB=data
+	else:
+		SB=data
 
 	return SB
 

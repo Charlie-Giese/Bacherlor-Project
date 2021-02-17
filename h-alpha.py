@@ -12,7 +12,8 @@ from astropy.visualization import (MinMaxInterval, SqrtStretch,
 import argparse
 from radio_beam import Beam
 from astropy.coordinates import SkyCoord
-from scipy.ndimage import gaussian_filter1d
+from scipy.ndimage import gaussian_filter
+from scipy.interpolate import interp1d
 
 
 
@@ -30,6 +31,7 @@ with fits.open(radio_image_filename) as hdul_1:
 header_R = fits.getheader(radio_image_filename)
 
 beam = Beam.from_fits_header(header_R)
+print(beam)
 SB_1=((data_1*u.Jy/u.beam).to(u.MJy/u.sr, equivalencies=u.beam_angular_area(beam))).value
 SB_1masked=np.ma.masked_invalid(SB_1)
 
@@ -73,7 +75,15 @@ X=1/wl_0_um
 A_lambda = A_V * X / R_V
 flux_true = flux_0 * 10**(0.318 * A_V)
 
-EM_ha = flux_true / 1.17e-7
+bmaj = 9.2066364288324
+bmin = 8.1022491455076
+
+sigma_1 = bmaj /(2 * m.sqrt(2 * m.log(2)) * header_H['D024ISCL'])
+sigma_2 = bmin /(2 * m.sqrt(2 * m.log(2)) * header_H['D024ISCL'])
+
+smoothed = gaussian_filter(flux_true, sigma = [sigma_1,sigma_2])
+
+EM_ha = smoothed / 1.17e-7
 
 """SETTING UP THE COORDINATES OF THE 4 LINES"""
 
@@ -136,23 +146,23 @@ x_R3 = np.linspace(0, 252, len(radio_em_vals_3))
 x_H3 = np.linspace(0, 252, len(h_alpha_em_vals_3))
 x_R4 = np.linspace(0, 252, len(radio_em_vals_4))
 x_H4 = np.linspace(0, 252, len(h_alpha_em_vals_4))
-
+"""
 fig, axs = plt.subplots(2, 2)
 axs[0, 0].plot(x_R1, radio_em_vals_1)
 axs[0, 0].plot(x_H1, h_alpha_em_vals_1)
-axs[0, 0].set_title('Dec = 61.20')
+axs[0, 0].set_title('Dec = 61.20\N{DEGREE SIGN}')
 axs[0, 1].plot(x_R2, radio_em_vals_2)
 axs[0, 1].plot(x_H2, h_alpha_em_vals_2)
-axs[0, 1].set_title('Dec = 61.19')
+axs[0, 1].set_title('Dec = 61.19\N{DEGREE SIGN}')
 axs[1, 0].plot(x_R3, radio_em_vals_3)
 axs[1, 0].plot(x_H3, h_alpha_em_vals_3)
-axs[1, 0].set_title('Dec = 61.18')
+axs[1, 0].set_title('Dec = 61.18\N{DEGREE SIGN}')
 axs[1, 1].plot(x_R4, radio_em_vals_4)
 axs[1, 1].plot(x_H4, h_alpha_em_vals_4)
-axs[1, 1].set_title('Dec = 61.17')
+axs[1, 1].set_title('Dec = 61.17\N{DEGREE SIGN}')
 
 for ax in axs.flat:
-    ax.set(xlabel='Arcseconds West of 350.22', ylabel='Emission Measure, pc cm^-6')
+    ax.set(xlabel='Arcseconds West of 350.22\N{DEGREE SIGN}', ylabel='Emission Measure, $pc cm^{-6}$')
 
 # Hide x labels and tick labels for top plots and y ticks for right plots.
 for ax in axs.flat:
@@ -160,10 +170,10 @@ for ax in axs.flat:
 
 plt.show()
 
-
+"""
 
 """PLOTTING RADIO DATA"""
-
+"""
 norm = ImageNormalize(em, interval=MinMaxInterval(), stretch=LogStretch())
 fig_R=plt.figure(2)
 ax=fig_R.add_subplot(111, projection=wcs_R, slices=('x','y'))
@@ -171,7 +181,7 @@ em_map=ax.imshow(em, origin='lower', cmap='plasma', norm=norm, vmax=3e6, vmin=0)
 ax.set_xlabel('Right Ascension\nJ2000')
 ax.set_ylabel('Declination')
 cbar=fig_R.colorbar(em_map)
-cbar.set_label('Emission Measure, pc cm^-6')
+cbar.set_label('Emission Measure, $pc cm^{-6}$')
 
 ax.plot((l_pixel_radio_1[1], r_pixel_radio_1[1]), (l_pixel_radio_1[0], r_pixel_radio_1[0]), c='white')
 ax.plot((l_pixel_radio_2[1], r_pixel_radio_2[1]), (l_pixel_radio_2[0], r_pixel_radio_2[0]), c='white')
@@ -185,31 +195,83 @@ ax.set_ylim(centre[1]-300, centre[1]+300)
 
 ra = ax.coords[0]
 ra.set_format_unit('degree', decimal=True)
-
+ax.set_xlabel('Right Ascension J2000')
 dec=ax.coords[1]
 dec.set_format_unit('degree', decimal=True)
+ax.set_ylabel('Declination')
 plt.show()
-
+"""
 """PLOTTING H-ALPHA DATA"""
-
+"""
 plot_data=EM_ha
 norm = ImageNormalize(plot_data, interval=MinMaxInterval(), stretch=LogStretch())
-fig_H=plt.figure(num=3)
-ax_0=fig_H.add_subplot(111, projection=wcs_H, slices=('x','y'))
-main_image=ax_0.imshow(X=plot_data, cmap='plasma', origin='lower', norm=norm, vmax=3e6 , vmin=0.)
-cbar=fig_H.colorbar(main_image)
-ax_0.plot((l_pixel_h_alpha_1[1], r_pixel_h_alpha_1[1]), (l_pixel_h_alpha_1[0], r_pixel_h_alpha_1[0]), c='white')
-ax_0.plot((l_pixel_h_alpha_2[1], r_pixel_h_alpha_2[1]), (l_pixel_h_alpha_2[0], r_pixel_h_alpha_2[0]), c='white')
-ax_0.plot((l_pixel_h_alpha_3[1], r_pixel_h_alpha_3[1]), (l_pixel_h_alpha_3[0], r_pixel_h_alpha_3[0]), c='white')
-ax_0.plot((l_pixel_h_alpha_4[1], r_pixel_h_alpha_4[1]), (l_pixel_h_alpha_4[0], r_pixel_h_alpha_4[0]), c='white')
+fig_H1=plt.figure(num=3)
+ax_01=fig_H1.add_subplot(111, projection=wcs_H, slices=('x','y'))
+main_image=ax_01.imshow(X=plot_data, cmap='plasma', origin='lower', norm=norm, vmax=3e6 , vmin=0.)
+cbar=fig_H1.colorbar(main_image)
+cbar.set_label('Emission Measure, $pc cm^{-6}$')
+ax_01.plot((l_pixel_h_alpha_1[1], r_pixel_h_alpha_1[1]), (l_pixel_h_alpha_1[0], r_pixel_h_alpha_1[0]), c='white')
+ax_01.plot((l_pixel_h_alpha_2[1], r_pixel_h_alpha_2[1]), (l_pixel_h_alpha_2[0], r_pixel_h_alpha_2[0]), c='white')
+ax_01.plot((l_pixel_h_alpha_3[1], r_pixel_h_alpha_3[1]), (l_pixel_h_alpha_3[0], r_pixel_h_alpha_3[0]), c='white')
+ax_01.plot((l_pixel_h_alpha_4[1], r_pixel_h_alpha_4[1]), (l_pixel_h_alpha_4[0], r_pixel_h_alpha_4[0]), c='white')
 
-ra = ax_0.coords[0]
+ra = ax_01.coords[0]
 ra.set_format_unit('degree', decimal=True)
-
-dec=ax_0.coords[1]
+ax_01.set_xlabel('Right Ascension J2000')
+dec=ax_01.coords[1]
 dec.set_format_unit('degree', decimal=True)
-
+ax_01.set_ylabel('Declination')
 plt.show()
+"""
+"""Plotting non-smoothed H-Alpha"""
 
+"""
+norm = ImageNormalize(flux_true, interval=MinMaxInterval(), stretch=LogStretch())
+fig_H2=plt.figure(num=4)
+ax_02=fig_H2.add_subplot(111, projection=wcs_H, slices=('x','y'))
+main_image=ax_02.imshow(X=flux_true, cmap='plasma', origin='lower', norm=norm, vmax=3e6 , vmin=0.)
+cbar=fig_H2.colorbar(main_image)
+ax_01.plot((l_pixel_h_alpha_1[1], r_pixel_h_alpha_1[1]), (l_pixel_h_alpha_1[0], r_pixel_h_alpha_1[0]), c='white')
+ax_01.plot((l_pixel_h_alpha_2[1], r_pixel_h_alpha_2[1]), (l_pixel_h_alpha_2[0], r_pixel_h_alpha_2[0]), c='white')
+ax_01.plot((l_pixel_h_alpha_3[1], r_pixel_h_alpha_3[1]), (l_pixel_h_alpha_3[0], r_pixel_h_alpha_3[0]), c='white')
+ax_01.plot((l_pixel_h_alpha_4[1], r_pixel_h_alpha_4[1]), (l_pixel_h_alpha_4[0], r_pixel_h_alpha_4[0]), c='white')
+
+ra = ax_02.coords[0]
+ra.set_format_unit('degree', decimal=True)
+ax_02.set_xlabel('Right Ascension J2000')
+dec=ax_02.coords[1]
+dec.set_format_unit('degree', decimal=True)
+ax_02.set_ylabel('Declination')
+plt.show()
+"""
 
 """PLOTTING RATIO OF BOTH"""
+
+x = np.linspace(0, 252, num = 170)
+
+R_inter_1 = interp1d(x_R1, radio_em_vals_1, kind = 'cubic')
+R_inter_2 = interp1d(x_R2, radio_em_vals_2, kind = 'cubic')
+R_inter_3 = interp1d(x_R3, radio_em_vals_3, kind = 'cubic')
+R_inter_4 = interp1d(x_R4, radio_em_vals_4, kind = 'cubic')
+
+H_inter_1 = interp1d(x_H1, h_alpha_em_vals_1, kind = 'cubic')
+H_inter_2 = interp1d(x_H2, h_alpha_em_vals_2, kind = 'cubic')
+H_inter_3 = interp1d(x_H3, h_alpha_em_vals_3, kind = 'cubic')
+H_inter_4 = interp1d(x_H4, h_alpha_em_vals_4, kind = 'cubic')
+
+ratio_1 = (H_inter_1(x) / np.max(H_inter_1(x))) / ((R_inter_1(x) + 10000) / np.max(R_inter_1(x)+10000))
+ratio_2 = (H_inter_2(x) / np.max(H_inter_2(x))) / ((R_inter_2(x) + 10000) / np.max(R_inter_2(x)+10000))
+ratio_3 = (H_inter_3(x) / np.max(H_inter_3(x))) / ((R_inter_3(x) + 10000) / np.max(R_inter_3(x)+10000))
+ratio_4 = (H_inter_4(x) / np.max(H_inter_4(x))) / ((R_inter_4(x) + 10000) / np.max(R_inter_4(x)+10000))
+
+ratio_fig = plt.figure(num=5)
+ax_ratio = ratio_fig.add_subplot(111)
+ax_ratio.plot(x, ratio_1, label='61.20\N{DEGREE SIGN}')
+ax_ratio.plot(x, ratio_2, label='61.19\N{DEGREE SIGN}')
+ax_ratio.plot(x, ratio_3, label='61.18\N{DEGREE SIGN}')
+ax_ratio.plot(x, ratio_4, label='61.17\N{DEGREE SIGN}')
+ax_ratio.legend()
+ax_ratio.set_xlabel('Arcseconds left of 350.22\N{DEGREE SIGN}')
+ax_ratio.set_ylabel('H\u03B1 EM / Radio EM')
+ax_ratio.set_ylim(0, 2.)
+plt.show()

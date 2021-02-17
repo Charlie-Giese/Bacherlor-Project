@@ -23,7 +23,7 @@ font = {'family' : 'DejaVu Sans',
 
 
 #fits_image_filename = 'fits/ngc7635_g0.5_briggs1.0_nsig5.image.5sig_masked.fits'
-fits_image_filename = 'smoothed_fits/45arcsec/unmasked/4-5_45smoothed.fits'
+fits_image_filename = 'fits/ngc7635_g0.5_briggs1.0_nsig5.image.5sig_masked.fits'
 
 with fits.open(fits_image_filename) as hdul:
 	data=hdul[0].data[0,0,:,:]
@@ -33,28 +33,46 @@ beam = Beam.from_fits_header(header)
 SB=((data*u.Jy/u.beam).to(u.MJy/u.sr, equivalencies=u.beam_angular_area(beam))).value
 SB_masked=np.ma.masked_invalid(SB)
 
-wcs = WCS(header, naxis=2)
-norm = ImageNormalize(SB_masked, interval=MinMaxInterval(), stretch=SqrtStretch())
+def optical_depth(flux):
+
+	SB_erg=flux * 1e-17
+	T=8000 #K
+	nu=8e9 # central frequency of our broadband observations
+	c=3e10 #speed of light in cgs
+	k_b=1.38e-16 #boltzmann constant in cgs
+	tau = - np.log( 1 - (c**2 *SB_erg)/(2*k_b*T*(nu**2)))
+	return tau
+
+
 
 # Position of NGC 7635: 23 20 48.3 +61 12 06
 #position = SkyCoord('23h20m48s', '+61d12m06s', frame='fk5')
 # subset of image, centred on NGC7635
 #cutout = Cutout2D(SB_masked, position, (1000, 1000), wcs=wcs)
 
+plot_data = optical_depth(SB)
+
+wcs = WCS(header, naxis=2)
+norm = ImageNormalize(plot_data, interval=MinMaxInterval(), stretch=SqrtStretch())
 
 figure=plt.figure(num=1)
 ax=figure.add_subplot(111, projection=wcs)
-main_image=ax.imshow(X=SB_masked, cmap='plasma', origin='lower', norm=norm)	#, vmax=np.max(data) , vmin=np.min(data))
+main_image=ax.imshow(X=plot_data, cmap='plasma', origin='lower', norm=norm)	#, vmax=np.max(data) , vmin=np.min(data))
 cbar=figure.colorbar(main_image)
 
 
 ax.set_xlabel('Right Ascension J2000', fontdict=font)
 ax.set_ylabel('Declination J2000', fontdict=font)
-cbar.set_label('Surface Brigthness (MJy/Sr)', fontdict=font)
+cbar.set_label('Optical Depth', fontdict=font)
+
+dims=np.shape(plot_data)
+centre=(dims[0]/2., dims[1]/2.)
+ax.set_xlim(centre[0]-300, centre[0]+300)
+ax.set_ylim(centre[1]-300, centre[1]+300)
 
 
-regions = open('tau_region_deg.txt', 'r')
-#regions = open('regions_degrees.txt', 'r')
+#regions = open('tau_region_deg.txt', 'r')
+regions = open('regions_degrees.txt', 'r')
 
 i=0
 labels=['a','b','c','d','e']
@@ -67,13 +85,13 @@ for reg in regions.readlines():
 	x = (float(region[0])-0.5*w)
 
 	r = Quadrangle	((x, y)*u.degree, w*u.degree, h*u.degree, vertex_unit='degree',
-              label='labels[i]', edgecolor='white', facecolor='none', linestyle='-',
+              label='labels[i]', edgecolor='black', facecolor='none', linestyle='-',
               transform=ax.get_transform('fk5'))
 
 
 	ax.add_patch(r)
 
-	#plt.text(float(region[0]), float(region[1]), labels[i], transform=ax.get_transform('fk5'), c='w')
+	plt.text(float(region[0]), float(region[1]), labels[i], transform=ax.get_transform('fk5'), c='k')
 	i+=1
 
 ra = ax.coords[0]

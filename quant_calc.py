@@ -10,7 +10,7 @@ import sys, getopt
 from astropy.wcs import WCS
 from matplotlib import cm
 from astropy.visualization import (MinMaxInterval, LogStretch,
-                                   ImageNormalize)
+                                   ImageNormalize, SqrtStretch)
 import argparse
 from radio_beam import Beam
 from astropy.visualization.wcsaxes import SphericalCircle, Quadrangle
@@ -158,7 +158,7 @@ def em(inputfile):
 
 	anchor_x= 350.138
 	anchor_y = 61.2
-	chord = Quadrangle((anchor_x, anchor_y)*u.degree, 0.08*u.degree, 0.0*u.degree, vertex_unit='degree',
+	chord = Quadrangle((anchor_x, anchor_y)*u.degree, (0.08)*u.degree, 0.0*u.degree, vertex_unit='degree',
                        label='labels[i]', edgecolor='k', facecolor='none', linestyle='-',
                        transform=ax.get_transform('fk5'))
 	#ax.scatter(anchor_x, anchor_y, transform=ax.get_transform('fk5'))
@@ -176,24 +176,31 @@ def em(inputfile):
 region=[350.138, 61.2, 0.04, 0.02]
 
 
-L=0.08 #degrees
+L = 0.08 * 60 * 60 #apparent angular chord length in this plot, arcseconds
+dL = 0.01 * 60 * 60
 
-d=2993.44 # distance to nebula in pc
+d = 2993.440 # distance to nebula in pc
+dd = 136.388 #error, pc
 
-CL=2*d*m.tan(L/2 * m.pi/180.) * m.cos(61.2 * m.pi/180) #pc, cos factor accounts
- 													   #for fact that two points
-													   #seperated by 1 degree are
-													   #closer the higher the dec
-print(CL)
-em_val=29231.7 # pc/(cm^6)
+CL = L * d * 1/206265 * m.cos(61.2 * m.pi/180) #pc, true chord length in pc
+dCL = CL * m.sqrt( (dd/d)**2 + (dL/L)**2 )
+
+
+print('The angular chord length is:', L, 'pm', dL, 'arseconds')
+print('The distane to the Nebula is:', d, 'pm', dd, 'pc')
+print('Length of Chord in pc:', CL, 'pm', dCL, 'pc')
+
+em_val = 29231.7 # pc/(cm^6)
+d_em_val = 1000.0
 
 def density(value, CL):
-	x=float(em_val)/float(CL)
+	x = float(em_val)/float(CL)
 	density = x**0.5 # per cubic cm:)
 	return density
 
-density=density(em, CL)
-print('Density is', density)
+density = density(em, CL)
+ddensity = 0.5 * m.sqrt( (d_em_val/em_val)**2 + (dCL/CL)**2 )
+print('Density is', density, 'pm', ddensity, 'cm^-3')
 
 emission_measure=em(inputfile)
 tau=optical_depth(inputfile)

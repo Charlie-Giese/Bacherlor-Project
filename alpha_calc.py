@@ -19,7 +19,9 @@ from astropy.visualization import (MinMaxInterval, SqrtStretch,
                                    ImageNormalize)
 
 
-
+fontsize=14
+font = {'family' : 'DejaVu Sans',
+'size' : fontsize}
 
 images = [
 #'smoothed_fits/standard/unmasked/4-5_smoothed.fits',
@@ -36,7 +38,7 @@ images = [
 'smoothed_fits/45arcsec/unmasked/8-9_45smoothed.fits',
 'smoothed_fits/45arcsec/unmasked/9-10_45smoothed.fits',
 'smoothed_fits/45arcsec/unmasked/10-11_45smoothed.fits',
-'fits/I2330P60.fits'
+#'fits/I2330P60.fits'
 ]
 
 
@@ -48,7 +50,7 @@ rms = [
 0.0001, # 8-9
 0.0001, # 9-10
 0.0001, # 10-11
-0.00065, #NVSS
+#0.00065, #NVSS
 ]
 
 
@@ -114,8 +116,10 @@ for reg in regions.readlines():
        yerr.append(rms[images.index(im)]*equiv)
        if header['CTYPE3'] == 'FREQ':
          freqs.append(header['CRVAL3']/1e9)
+         print freqs
        elif header['CTYPE4'] == 'FREQ':
          freqs.append(header['CRVAL4']/1e9)
+         print freqs
        #freqs.append(imhead(imagename=im,mode='get',hdkey='crval4')['value']/1e9)
        em.append(em_mes(freqs[-1],fluxes[-1]))
        tau.append(opt_dep(freqs[-1], em_mes(freqs[-1],fluxes[-1])))
@@ -126,9 +130,9 @@ for reg in regions.readlines():
 
 
 
-  data_all = pd.DataFrame({'Frequencies (GHz)':np.round(freqs,3), 'Fluxes (MJy sr-1)':np.round(fluxes,3),
-                           'RMS (Jy sr-1)': np.round(yerr,3) , 'EM (pc cm-6)': np.round(em,3)},
-                           columns=['Frequencies (GHz)', 'Fluxes (MJy sr-1)', 'RMS (Jy sr-1)', 'EM (pc cm-6)'])
+  #data_all = pd.DataFrame({'Frequencies (GHz)':np.round(freqs,3), 'Fluxes (MJy sr-1)':np.round(fluxes,3),
+    #                       'RMS (Jy sr-1)': np.round(yerr,3) , 'EM (pc cm-6)': np.round(em,3)},
+     #                      columns=['Frequencies (GHz)', 'Fluxes (MJy sr-1)', 'RMS (Jy sr-1)', 'EM (pc cm-6)'])
 
 
 
@@ -177,9 +181,12 @@ for reg in regions.readlines():
   xerr=0.5,
   fmt='r+',label='data')
 
+  ax.tick_params(axis='x', labelsize= 14)
+  ax.tick_params(axis='y', labelsize= 14)
+
   plt.legend(loc='upper right')
-  ax.set_xlabel('Frequency (GHz)')
-  ax.set_ylabel('Surface Brightness (MJy/sr)')
+  ax.set_xlabel('Frequency (GHz)', fontdict=font)
+  ax.set_ylabel('Surface Brightness (MJy/sr)', fontdict=font)
 
   ax.set_title(titles[i])
   i+=1

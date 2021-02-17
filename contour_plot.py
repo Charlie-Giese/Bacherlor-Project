@@ -38,7 +38,7 @@ imsize=float(args.imsize)
 outputfile=args.outputfile
 
 #configuring font
-fontsize=11
+fontsize=12
 font = {'family' : 'DejaVu Sans',
 'size' : fontsize}
 
@@ -132,14 +132,14 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 		ax.invert_yaxis()
 
 
-
+																					#\u03C3
 	dims=np.shape(data)
 	centre=(dims[0]/2, dims[1]/2)
 	ax.set_xlim(centre[0]-imsize, centre[0]+imsize)
 	ax.set_ylim(centre[1]-imsize, centre[1]+imsize)
 
 
-	ax.set_xlabel('Right Ascension J2000\n Contours at 50, 150, 300, 600 \u03C3', fontdict=font)
+	ax.set_xlabel('Right Ascension J2000\n Contours at 0.1, 1, 2, 5, 8, 15 MJy/sr', fontdict=font)
 	ax.set_ylabel('Declination J2000', fontdict=font)
 	cbar.set_label('Surface Brigthness (MJy/Sr)', fontdict=font)
 	ra = ax.coords[0]
@@ -148,7 +148,7 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 	dec=ax.coords[1]
 	dec.set_format_unit('degree', decimal=True)
 
-	ax.set_title('4-12 GHz')
+	ax.set_title('4-8 GHz')
 
 
 	if contour_file != False:
