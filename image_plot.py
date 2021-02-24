@@ -34,6 +34,10 @@ fontsize=11
 font = {'family' : 'DejaVu Sans',
 'size' : fontsize}
 
+star_coord = SkyCoord("23h20m44.5s +61d11m40.5s", frame = 'icrs')
+#star_coord = SkyCoord(350.1833, 61.1944, unit='deg', frame = 'fk5')
+print(star_coord)
+
 ### IMAGE PLOT CODE; INCLUDES A FUNCTION FOR IMPORTING FITS FILE, CONVERTING TO APPROPRIATE UNITS AND THEN PLOTTING ###
 
 def jy_beam_MJy_sr(data, header):
@@ -104,7 +108,7 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 	block = import_fits(inputfile, d_range)
 	data = block[0]
 	hrd = block[1]
-	wcs = WCS(hrd)
+	wcs = WCS(hrd, naxis=2)
 	if hrd['TELESCOP'] != 'Spitzer':
 		beam = Beam.from_fits_header(hrd)
 
@@ -120,6 +124,8 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 
 	main_image=ax.imshow(X=data, cmap='plasma', origin='lower', norm=norm, vmax=np.max(data) , vmin=np.min(data))
 	cbar=figure.colorbar(main_image)
+	star_index = wcs.world_to_pixel(star_coord)
+	star=ax.scatter(star_index[0], star_index[1], marker='*', c='w')
 
 	if hrd['TELESCOP'] == 'Spitzer':
 		ax.invert_xaxis()
@@ -144,15 +150,15 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 	dec.set_format_unit('degree', decimal=True)
 
 	#ax.set_title('Spitzer 24\u03BCm', fontdict=font)
-	ax.set_title('4-12 GHz, 5\u03C3 mask', fontdict=font)
+	ax.set_title('4-12 GHz', fontdict=font)# 5\u03C3 mask', fontdict=font)
 
 	if hrd['TELESCOP'] != 'Spitzer':
 		beam = Beam.from_fits_header(hrd)
-		c = SphericalCircle((350.34, 61.13)*u.degree, beam.major, edgecolor='black', facecolor='none',
+		c = SphericalCircle((350.30, 61.16)*u.degree, beam.major, edgecolor='black', facecolor='none',
 	           				transform=ax.get_transform('fk5'))
 		ax.add_patch(c)
 
-	
+
 	if outputfile != False:
 		plt.savefig(os.getcwd()+'/thesis_figs/'+outputfile)
 	plt.show()

@@ -42,6 +42,8 @@ fontsize=12
 font = {'family' : 'DejaVu Sans',
 'size' : fontsize}
 
+star_coord = SkyCoord("23h20m44.5s +61d11m40.5s", frame = 'icrs')
+
 ### IMAGE PLOT CODE; INCLUDES A FUNCTION FOR IMPORTING FITS FILE, CONVERTING TO APPROPRIATE UNITS AND THEN PLOTTING ###
 
 def jy_beam_MJy_sr(data, header):
@@ -110,7 +112,7 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 	block = import_fits(inputfile, d_range)
 	data = block[0]
 	hrd = block[1]
-	wcs = WCS(hrd)
+	wcs = WCS(hrd, naxis=2)
 	if hrd['TELESCOP'] != 'Spitzer':
 		beam = Beam.from_fits_header(hrd)
 
@@ -131,6 +133,9 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 		ax.invert_xaxis()
 		ax.invert_yaxis()
 
+	star_index = wcs.world_to_pixel(star_coord)
+	star=ax.scatter(star_index[0], star_index[1], marker='*', c='w')
+
 
 																					#\u03C3
 	dims=np.shape(data)
@@ -139,7 +144,7 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 	ax.set_ylim(centre[1]-imsize, centre[1]+imsize)
 
 
-	ax.set_xlabel('Right Ascension J2000\n Contours at 0.1, 1, 2, 5, 8, 15 MJy/sr', fontdict=font)
+	ax.set_xlabel('Right Ascension J2000\n Contours at 0.5, 3, 5, 10, 15 MJy/sr', fontdict=font)
 	ax.set_ylabel('Declination J2000', fontdict=font)
 	cbar.set_label('Surface Brigthness (MJy/Sr)', fontdict=font)
 	ra = ax.coords[0]
@@ -148,7 +153,7 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 	dec=ax.coords[1]
 	dec.set_format_unit('degree', decimal=True)
 
-	ax.set_title('4-8 GHz')
+	ax.set_title('4-12 GHz, 5\u03C3 mask ')
 
 
 	if contour_file != False:
@@ -156,7 +161,7 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 
 	if hrd['TELESCOP'] != 'Spitzer':
 		beam = Beam.from_fits_header(hrd)
-		c = SphericalCircle((350.34, 61.13)*u.degree, beam.major, edgecolor='white', facecolor='none',
+		c = SphericalCircle((350.30, 61.15)*u.degree, beam.major, edgecolor='black', facecolor='none',
 	           	transform=ax.get_transform('fk5'))
 		ax.add_patch(c)
 

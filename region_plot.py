@@ -21,9 +21,12 @@ fontsize=11
 font = {'family' : 'DejaVu Sans',
 'size' : fontsize}
 
+#coordinates of BD+60 2522
+star_coord = SkyCoord("23h20m44.5s +61d11m40.5s", frame = 'icrs')
+
 
 #fits_image_filename = 'fits/ngc7635_g0.5_briggs1.0_nsig5.image.5sig_masked.fits'
-fits_image_filename = 'fits/ngc7635_g0.5_briggs1.0_nsig5.image.5sig_masked.fits'
+fits_image_filename = 'fits/ngc7635_g0.5_briggs1.0_nsig5.image.tt0.fits'
 
 with fits.open(fits_image_filename) as hdul:
 	data=hdul[0].data[0,0,:,:]
@@ -50,7 +53,7 @@ def optical_depth(flux):
 # subset of image, centred on NGC7635
 #cutout = Cutout2D(SB_masked, position, (1000, 1000), wcs=wcs)
 
-plot_data = optical_depth(SB)
+plot_data = SB_masked
 
 wcs = WCS(header, naxis=2)
 norm = ImageNormalize(plot_data, interval=MinMaxInterval(), stretch=SqrtStretch())
@@ -60,10 +63,12 @@ ax=figure.add_subplot(111, projection=wcs)
 main_image=ax.imshow(X=plot_data, cmap='plasma', origin='lower', norm=norm)	#, vmax=np.max(data) , vmin=np.min(data))
 cbar=figure.colorbar(main_image)
 
+star_index = wcs.world_to_pixel(star_coord)
+star=ax.scatter(star_index[0], star_index[1], marker='*', c='w')
 
 ax.set_xlabel('Right Ascension J2000', fontdict=font)
 ax.set_ylabel('Declination J2000', fontdict=font)
-cbar.set_label('Optical Depth', fontdict=font)
+cbar.set_label('Surface Brigthness (MJy/Sr)', fontdict=font)
 
 dims=np.shape(plot_data)
 centre=(dims[0]/2., dims[1]/2.)
@@ -85,13 +90,13 @@ for reg in regions.readlines():
 	x = (float(region[0])-0.5*w)
 
 	r = Quadrangle	((x, y)*u.degree, w*u.degree, h*u.degree, vertex_unit='degree',
-              label='labels[i]', edgecolor='black', facecolor='none', linestyle='-',
+              label='labels[i]', edgecolor='white', facecolor='none', linestyle='-',
               transform=ax.get_transform('fk5'))
 
 
 	ax.add_patch(r)
 
-	plt.text(float(region[0]), float(region[1]), labels[i], transform=ax.get_transform('fk5'), c='k')
+	plt.text(float(region[0]), float(region[1]), labels[i], transform=ax.get_transform('fk5'), c='w')
 	i+=1
 
 ra = ax.coords[0]

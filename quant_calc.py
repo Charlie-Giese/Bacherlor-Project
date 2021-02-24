@@ -8,6 +8,7 @@ import math as m
 import os
 import sys, getopt
 from astropy.wcs import WCS
+from astropy.coordinates import SkyCoord
 from matplotlib import cm
 from astropy.visualization import (MinMaxInterval, LogStretch,
                                    ImageNormalize, SqrtStretch)
@@ -123,15 +124,15 @@ def em(inputfile):
 
 
 	hrd = import_fits(inputfile)[1]
-	wcs = WCS(hrd)
+	wcs = WCS(hrd, naxis=2)
 
 
 	norm = ImageNormalize(emission_measure, interval=MinMaxInterval(),
-                      stretch=LogStretch())
+                      stretch=SqrtStretch())
 
 	fig=plt.figure(1)
-	ax=fig.add_subplot(111, projection=wcs, slices=('x','y',0,0))
-	em_map=ax.imshow(emission_measure, origin='lower', cmap='plasma', norm=norm, vmax=3e6, vmin=0)
+	ax=fig.add_subplot(111, projection=wcs, slices=('x','y'))
+	em_map=ax.imshow(emission_measure, origin='lower', cmap='viridis', norm=norm, vmax=np.max(emission_measure), vmin=np.min(emission_measure))
 	ax.set_xlabel('Right Ascension\nJ2000')
 	ax.set_ylabel('Declination')
 	cbar=fig.colorbar(em_map)
@@ -149,26 +150,54 @@ def em(inputfile):
 	dec.set_format_unit('degree', decimal=True)
 
 	#ax.grid(True)
-
+	#350.19 61.22
 	"""This following code is only for overplotting the geometry for the density estimate"""
 
-	#point=SphericalCircle((350.178, 61.2)*u.degree, 0.001*u.degree, edgecolor='white', facecolor='white',
-	#					  transform=ax.get_transform('fk5'))
-	#ax.add_patch(point)
+	knot_coord = SkyCoord(350.1925, 61.2225, unit='deg', frame='fk5')
+	star_coord = SkyCoord("23h20m44.5s +61d11m40.5s", frame = 'fk5')
+	star_x = wcs.world_to_pixel(star_coord)[0]
+	star_y = wcs.world_to_pixel(star_coord)[1]
+	star = ax.scatter(star_x, star_y, marker='*', c='lime')
+	knot_x = wcs.world_to_pixel(knot_coord)[0]
+	knot_y = wcs.world_to_pixel(knot_coord)[1]
+	knot = ax.scatter(knot_x, knot_y, marker='4', c='lime')
+	x = [star_x, knot_x]
+	y = [star_y, knot_y]
+	ax.plot(x,y, c='lime')
 
-	anchor_x= 350.138
-	anchor_y = 61.2
-	chord = Quadrangle((anchor_x, anchor_y)*u.degree, (0.08)*u.degree, 0.0*u.degree, vertex_unit='degree',
-                       label='labels[i]', edgecolor='k', facecolor='none', linestyle='-',
-                       transform=ax.get_transform('fk5'))
-	#ax.scatter(anchor_x, anchor_y, transform=ax.get_transform('fk5'))
-	ax.add_patch(chord)
-	ax.text(350.168, 61.201, s='Chord', c='k', transform=ax.get_transform('fk5'))
-	axis = Quadrangle((350.178, 61.18)*u.degree, 0.*u.degree, 0.04*u.degree, vertex_unit='degree',
-	                  label='labels[i]', edgecolor='k', facecolor='none', linestyle='-',
-	                  transform=ax.get_transform('fk5'))
-	ax.add_patch(axis)
-	ax.text(350.175, 61.176, s='Axis', c='k', transform=ax.get_transform('fk5'))
+	left_cord = SkyCoord(350.21, 61.202, unit='deg', frame='fk5')
+	left_x = wcs.world_to_pixel(left_cord)[0]
+	left_y = wcs.world_to_pixel(left_cord)[1]
+	right_cord = SkyCoord(350.164, 61.205, unit='deg', frame='fk5')
+	right_x = wcs.world_to_pixel(right_cord)[0]
+	right_y = wcs.world_to_pixel(right_cord)[1]
+	ax.plot((left_x, right_x), (left_y,right_y), c='lime')
+
+	dens_coord = SkyCoord(350.188, 61.2035, unit='deg', frame='fk5')
+	dens_x = wcs.world_to_array_index(dens_coord)[0]
+	dens_y = wcs.world_to_array_index(dens_coord)[1]
+	#ax.scatter(dens_x, dens_y, s=0.1)
+
+	L = m.sqrt((350.21 - 350.164)**2 - (61.202 - 61.205)**2) * 60 * 60 #apparent angular chord length in this plot, arcseconds
+	dL = L/10.
+	d = 2993.440 # distance to nebula in pc
+	dd = 136.388 #error, pc
+	CL = L * d * 1/206265 * m.cos(61.2035 * m.pi/180) #pc, true chord length in pc
+	dCL = CL * m.sqrt( (dd/d)**2 + (dL/L)**2 )
+	dens_point = wcs.world_to_pixel(dens_coord)
+	em_val = emission_measure[dens_x, dens_y]
+	d_em_val = 1000.0
+
+	def density(value, CL):
+		x = float(em_val)/float(CL)
+		density = x**0.5 # per cubic cm:)
+		return density
+
+	density = density(em, CL)
+	ddensity = 0.5 * m.sqrt( (d_em_val/em_val)**2 + (dCL/CL)**2 )
+	print('Length of Chord in pc:', CL, 'pm', dCL, 'pc')
+	print('Emission Measure is', em_val)
+	print('Density is', density, 'pm', ddensity, 'cm^-3')
 
 	plt.show()
 
@@ -192,6 +221,7 @@ print('Length of Chord in pc:', CL, 'pm', dCL, 'pc')
 
 em_val = 29231.7 # pc/(cm^6)
 d_em_val = 1000.0
+print('Emission Measure is', em_val)
 
 def density(value, CL):
 	x = float(em_val)/float(CL)
@@ -203,4 +233,4 @@ ddensity = 0.5 * m.sqrt( (d_em_val/em_val)**2 + (dCL/CL)**2 )
 print('Density is', density, 'pm', ddensity, 'cm^-3')
 
 emission_measure=em(inputfile)
-tau=optical_depth(inputfile)
+#tau=optical_depth(inputfile)

@@ -64,6 +64,9 @@ def jyb_to_mjsr(bmin,bmaj):
 def s_nu(nu,s0,alpha): # f(xdata,a0,a1)
   return s0*nu**alpha
 
+def tau_nu(nu, tau0, ind):
+	return tau0*nu**ind
+
 def em_mes(S, nu):
 	T=8000 #K
 	S_erg = S * 1e-17	 #this is the surface brightness in units of ergs/cm^2/sr
@@ -125,7 +128,12 @@ for reg in regions.readlines():
     #                       columns=['Frequencies (GHz)', 'Fluxes (MJy sr-1)', 'RMS (Jy sr-1)', 'EM (pc cm-6)'])
 
 
-
+  coef, cov = curve_fit(tau_nu,freqs,fluxes)#,sigma=yerr,absolute_sigma=True)
+  tau0      = coef[0]
+  #freq_err  = np.sqrt(cov[0,0]) # [[sxx sxy][syx syy]]
+  ind       = coef[1]
+  print(ind)
+  #alpha_err = np.sqrt(cov[1,1])
 
 
   ar=np.array(flux_err)
@@ -138,6 +146,7 @@ for reg in regions.readlines():
   #ax.set_xscale("log");
   ax.set_yscale("log")
   ax.scatter(freqs, tau)
+  ax.plot(freqs, tau_nu(freqs, tau0, ind))
 
   ax.errorbar(freqs,tau,
   yerr=yerr,
