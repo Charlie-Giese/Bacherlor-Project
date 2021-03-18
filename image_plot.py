@@ -3,6 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
+import matplotlib
 import astropy.units as u
 import math as m
 import os
@@ -29,10 +30,14 @@ d_range=args.d_range
 imsize=float(args.imsize)
 outputfile=args.outputfile
 
-#configuring font
-fontsize=11
-font = {'family' : 'DejaVu Sans',
-'size' : fontsize}
+#configuring matplotlib
+matplotlib.rcParams['font.size'] = 16
+matplotlib.rcParams['figure.figsize'] = [6.8,5.5]
+matplotlib.rcParams['figure.dpi'] = 120
+matplotlib.rcParams['font.sans-serif'] = "Nimbus Roman"
+
+
+
 
 star_coord = SkyCoord("23h20m44.5s +61d11m40.5s", frame = 'icrs')
 #star_coord = SkyCoord(350.1833, 61.1944, unit='deg', frame = 'fk5')
@@ -116,6 +121,15 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 	norm = ImageNormalize(data, interval=MinMaxInterval(), stretch=SqrtStretch())
 
 	figure=plt.figure(num=1)
+	figure.subplots_adjust(
+		top=0.924,
+		bottom=0.208,
+		left=0.042,
+		right=0.958,
+		hspace=0.125,
+		wspace=0.2
+	)
+
 	if wcs.pixel_n_dim == 4:
 		ax=figure.add_subplot(111, projection=wcs, slices=('x','y', 0, 0))
 	elif wcs.pixel_n_dim ==2:
@@ -131,8 +145,7 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 		ax.invert_xaxis()
 		ax.invert_yaxis()
 
-	#position=SkyCoord('23h20m48s', '+61d12m06s', frame='icrs')
-	#centre=wcs.world_to_pixel(position)
+
 	dims=np.shape(data)
 	centre=(dims[0]/2., dims[1]/2.)
 	ax.set_xlim(centre[0]-imsize, centre[0]+imsize)
@@ -140,9 +153,9 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 
 
 
-	ax.set_xlabel('Right Ascension J2000', fontdict=font)
-	ax.set_ylabel('Declination J2000', fontdict=font)
-	cbar.set_label('Surface Brigthness (MJy/Sr)', fontdict=font)
+	ax.set_xlabel('Right Ascension J2000')
+	ax.set_ylabel('Declination J2000')
+	cbar.set_label('Surface Brigthness (MJy/Sr)')
 	ra = ax.coords[0]
 	ra.set_format_unit('degree', decimal=True)
 
@@ -150,11 +163,11 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 	dec.set_format_unit('degree', decimal=True)
 
 	#ax.set_title('Spitzer 24\u03BCm', fontdict=font)
-	ax.set_title('4-12 GHz', fontdict=font)# 5\u03C3 mask', fontdict=font)
+	ax.set_title('4-12 GH 5\u03C3 mask')
 
 	if hrd['TELESCOP'] != 'Spitzer':
 		beam = Beam.from_fits_header(hrd)
-		c = SphericalCircle((350.30, 61.16)*u.degree, beam.major, edgecolor='black', facecolor='none',
+		c = SphericalCircle((350.32, 61.14)*u.degree, beam.major, edgecolor='black', facecolor='none',
 	           				transform=ax.get_transform('fk5'))
 		ax.add_patch(c)
 

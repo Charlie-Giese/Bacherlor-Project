@@ -15,11 +15,14 @@ from astropy.visualization import (MinMaxInterval, SqrtStretch,
 from astropy.visualization.wcsaxes import Quadrangle
 from astropy.visualization.wcsaxes import SphericalCircle
 from astropy.nddata import Cutout2D
+import matplotlib
 
 
-fontsize=11
-font = {'family' : 'DejaVu Sans',
-'size' : fontsize}
+#configuring matplotlib
+matplotlib.rcParams['font.size'] = 16
+matplotlib.rcParams['figure.figsize'] = [6.8,5.5]
+matplotlib.rcParams['figure.dpi'] = 120
+matplotlib.rcParams['font.sans-serif'] = "Nimbus Roman"
 
 #coordinates of BD+60 2522
 star_coord = SkyCoord("23h20m44.5s +61d11m40.5s", frame = 'icrs')
@@ -66,9 +69,9 @@ cbar=figure.colorbar(main_image)
 star_index = wcs.world_to_pixel(star_coord)
 star=ax.scatter(star_index[0], star_index[1], marker='*', c='w')
 
-ax.set_xlabel('Right Ascension J2000', fontdict=font)
-ax.set_ylabel('Declination J2000', fontdict=font)
-cbar.set_label('Surface Brigthness (MJy/Sr)', fontdict=font)
+ax.set_xlabel('Right Ascension J2000')
+ax.set_ylabel('Declination J2000')
+cbar.set_label('Surface Brigthness (MJy/Sr)')
 
 dims=np.shape(plot_data)
 centre=(dims[0]/2., dims[1]/2.)
@@ -78,9 +81,9 @@ ax.set_ylim(centre[1]-300, centre[1]+300)
 
 #regions = open('tau_region_deg.txt', 'r')
 regions = open('regions_degrees.txt', 'r')
-
+#350.199, 61.2321, 0.0230107, 0.0246958
 i=0
-labels=['a','b','c','d','e']
+labels=['a','b','c','d']
 
 for reg in regions.readlines():
 	region = reg.split(",")

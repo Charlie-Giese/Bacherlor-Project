@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from astropy.io import fits
 import astropy.units as u
 import math as m
+import matplotlib
 import os
 from astropy.coordinates import SkyCoord
 import sys, getopt
@@ -38,9 +39,11 @@ imsize=float(args.imsize)
 outputfile=args.outputfile
 
 #configuring font
-fontsize=12
-font = {'family' : 'DejaVu Sans',
-'size' : fontsize}
+#configuring matplotlib
+matplotlib.rcParams['font.size'] = 16
+matplotlib.rcParams['figure.figsize'] = [6.8,5.5]
+matplotlib.rcParams['figure.dpi'] = 120
+matplotlib.rcParams['font.sans-serif'] = "Nimbus Roman"
 
 star_coord = SkyCoord("23h20m44.5s +61d11m40.5s", frame = 'icrs')
 
@@ -120,13 +123,23 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 	norm = ImageNormalize(data, interval=MinMaxInterval(), stretch=SqrtStretch())
 
 	figure=plt.figure(num=1)
+	figure.subplots_adjust(
+		top=0.897,
+		bottom=0.201,
+		left=0.0,
+		right=0.93,
+		hspace=0.125,
+		wspace=0.2
+	)
 	if wcs.pixel_n_dim == 4:
 		ax=figure.add_subplot(111, projection=wcs, slices=('x','y', 0, 0))
 	elif wcs.pixel_n_dim ==2:
 		ax=figure.add_subplot(111, projection=wcs, slices=('x','y'))
 
+	if contour_file != False:
+		contours=contour_plot(ax, contour_file, contour_type, beam)
 
-	main_image=ax.imshow(X=data, cmap='plasma', origin='lower', norm=norm, vmax=np.max(data) , vmin=np.min(data))
+	main_image=ax.imshow(X=data, cmap='plasma', origin='lower', norm=norm, vmax=np.max(data) , vmin=np.min(data), transform=ax.get_transform(wcs.celestial))
 	cbar=figure.colorbar(main_image)
 
 	if hrd['TELESCOP'] == 'Spitzer':
@@ -136,36 +149,31 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 	star_index = wcs.world_to_pixel(star_coord)
 	star=ax.scatter(star_index[0], star_index[1], marker='*', c='w')
 
-
-																					#\u03C3
 	dims=np.shape(data)
 	centre=(dims[0]/2, dims[1]/2)
 	ax.set_xlim(centre[0]-imsize, centre[0]+imsize)
 	ax.set_ylim(centre[1]-imsize, centre[1]+imsize)
 
-
-	ax.set_xlabel('Right Ascension J2000\n Contours at 0.5, 3, 5, 10, 15 MJy/sr', fontdict=font)
-	ax.set_ylabel('Declination J2000', fontdict=font)
-	cbar.set_label('Surface Brigthness (MJy/Sr)', fontdict=font)
+	ax.set_xlabel('Right Ascension J2000\n Contours at 0.1, 0.5, 1, 3, 6 MJy/sr')
+	ax.set_ylabel('Declination J2000')
+	cbar.set_label('Surface Brigthness (MJy/Sr)')
 	ra = ax.coords[0]
 	ra.set_format_unit('degree', decimal=True)
+	ra.set_ticks(number=4)
 
 	dec=ax.coords[1]
 	dec.set_format_unit('degree', decimal=True)
-
-	ax.set_title('4-12 GHz, 5\u03C3 mask ')
-
-
-	if contour_file != False:
-		contours=contour_plot(ax, contour_file, contour_type, beam)
-
-	if hrd['TELESCOP'] != 'Spitzer':
-		beam = Beam.from_fits_header(hrd)
-		c = SphericalCircle((350.30, 61.15)*u.degree, beam.major, edgecolor='black', facecolor='none',
-	           	transform=ax.get_transform('fk5'))
-		ax.add_patch(c)
+	dec.set_ticks(number=4)
+	ax.set_title('10-11 GHz, 5\u03C3 mask ')
 
 
+
+
+	#if hrd['TELESCOP'] != 'Spitzer':
+	#	beam = Beam.from_fits_header(hrd)
+	#	c = SphericalCircle((350.28, 61.16)*u.degree, beam.major, edgecolor='black', facecolor='none',
+	#           	transform=ax.get_transform('fk5'))
+	#	ax.add_patch(c)
 
 	plt.show()
 	if outputfile != False:
@@ -218,16 +226,16 @@ def contour_plot(ax, contour_file, contour_type, image_beam):
 
 	if contour_type == "automatic":
 		spacing = contour_bias
-		n = 7 #number of contours
-		ub = np.max(contour_data)
-		lb = np.min(contour_data)
+		n = 5 #number of contours
+		ub = np.max(cdata)
+		lb = np.min(cdata)
 		def level_func(lb, ub, n, spacing=1.1):
 			span = (ub-lb)
 			dx = 1.0 / (n-1)
 			return [lb + (i*dx)**spacing*span for i in range(n)]
 		levels=level_func(lb, ub, n, spacing=float(spacing))
 		print('Generated Levels for contour are: ', levels, 'MJy/sr')
-		CS = ax.contour(cdata, levels=levels, colors='white', transform=ax.get_transform(cwcs.celestial), alpha=0.5)
+		CS = ax.contour(cdata, levels=levels, colors='black', transform=ax.get_transform(cwcs.celestial), alpha=0.5)
 	if contour_type == "sigma":
 		contour_levels=list(map(float, args.contour_levels))
 		sigma_levels=np.array(contour_levels)

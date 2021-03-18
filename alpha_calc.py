@@ -19,30 +19,32 @@ from astropy.visualization import (MinMaxInterval, SqrtStretch,
                                    ImageNormalize)
 
 
-fontsize=14
-font = {'family' : 'DejaVu Sans',
-'size' : fontsize}
+matplotlib.rcParams['font.size'] = 16
+matplotlib.rcParams['figure.figsize'] = [6.8,5.5]
+matplotlib.rcParams['figure.dpi'] = 120
+matplotlib.rcParams['font.sans-serif'] = "Nimbus Roman"
 
 images = [
-#'smoothed_fits/standard/unmasked/4-5_smoothed.fits',
-#'smoothed_fits/standard/unmasked/5-6_smoothed.fits',
-#'smoothed_fits/standard/unmasked/6-7_smoothed.fits',
-#'smoothed_fits/standard/unmasked/7-8_smoothed.fits',
-#'smoothed_fits/standard/unmasked/8-9_smoothed.fits',
-#'smoothed_fits/standard/unmasked/9-10_smoothed.fits',
-#'smoothed_fits/standard/unmasked/10-11_smoothed.fits',
-'smoothed_fits/45arcsec/unmasked/4-5_45smoothed.fits',
-'smoothed_fits/45arcsec/unmasked/5-6_45smoothed.fits',
-'smoothed_fits/45arcsec/unmasked/6-7_45smoothed.fits',
-'smoothed_fits/45arcsec/unmasked/7-8_45smoothed.fits',
-'smoothed_fits/45arcsec/unmasked/8-9_45smoothed.fits',
-'smoothed_fits/45arcsec/unmasked/9-10_45smoothed.fits',
-'smoothed_fits/45arcsec/unmasked/10-11_45smoothed.fits',
-#'fits/I2330P60.fits'
+#'fits/I2330P60.fits',
+'smoothed_fits/standard/unmasked/4-5_smoothed.fits',
+'smoothed_fits/standard/unmasked/5-6_smoothed.fits',
+'smoothed_fits/standard/unmasked/6-7_smoothed.fits',
+'smoothed_fits/standard/unmasked/7-8_smoothed.fits',
+'smoothed_fits/standard/unmasked/8-9_smoothed.fits',
+'smoothed_fits/standard/unmasked/9-10_smoothed.fits',
+'smoothed_fits/standard/unmasked/10-11_smoothed.fits',
+#'smoothed_fits/45arcsec/unmasked/4-5_45smoothed.fits',
+#'smoothed_fits/45arcsec/unmasked/5-6_45smoothed.fits',
+#'smoothed_fits/45arcsec/unmasked/6-7_45smoothed.fits',
+#'smoothed_fits/45arcsec/unmasked/7-8_45smoothed.fits',
+#'smoothed_fits/45arcsec/unmasked/8-9_45smoothed.fits',
+#'smoothed_fits/45arcsec/unmasked/9-10_45smoothed.fits',
+#'smoothed_fits/45arcsec/unmasked/10-11_45smoothed.fits',
 ]
 
 
 rms = [
+0.00065, #NVSS
 0.0001, # 4-5
 0.00015, # 5-6
 0.00013, # 6-7
@@ -50,7 +52,6 @@ rms = [
 0.0001, # 8-9
 0.0001, # 9-10
 0.0001, # 10-11
-#0.00065, #NVSS
 ]
 
 
@@ -63,6 +64,7 @@ def jyb_to_mjsr(bmin,bmaj):
 
 def s_nu(nu,s0,alpha): # f(xdata,a0,a1)
   return s0*nu**alpha
+
 
 def em_mes(S, nu):
 	T=8000 #K
@@ -84,8 +86,7 @@ titles = [
 'Region (a)',
 'Region (b)',
 'Region (c)',
-'Region (d)',
-'Region (e)',
+'Region (d)'
 ]
 
 i=0
@@ -116,10 +117,8 @@ for reg in regions.readlines():
        yerr.append(rms[images.index(im)]*equiv)
        if header['CTYPE3'] == 'FREQ':
          freqs.append(header['CRVAL3']/1e9)
-         print freqs
        elif header['CTYPE4'] == 'FREQ':
          freqs.append(header['CRVAL4']/1e9)
-         print freqs
        #freqs.append(imhead(imagename=im,mode='get',hdkey='crval4')['value']/1e9)
        em.append(em_mes(freqs[-1],fluxes[-1]))
        tau.append(opt_dep(freqs[-1], em_mes(freqs[-1],fluxes[-1])))
@@ -161,8 +160,9 @@ for reg in regions.readlines():
 
   fig = plt.figure()
   ax = fig.add_subplot(111)
-  ax.set_xscale("log"); ax.set_yscale("log")
+  #ax.set_xscale("log"); ax.set_yscale("log")
   #ax.scatter(freqs, fluxes)
+
   ax.plot(freqs, y, c='k', label=r'$\alpha$'+'='+str(round(coef[1],2))+' +/-'+str(round(alpha_err,3)))
 
   ax.plot(freqs,yp,'g--')
@@ -185,8 +185,8 @@ for reg in regions.readlines():
   ax.tick_params(axis='y', labelsize= 14)
 
   plt.legend(loc='upper right')
-  ax.set_xlabel('Frequency (GHz)', fontdict=font)
-  ax.set_ylabel('Surface Brightness (MJy/sr)', fontdict=font)
+  ax.set_xlabel('Frequency (GHz)')
+  ax.set_ylabel('Surface Brightness (MJy/sr)')
 
   ax.set_title(titles[i])
   i+=1

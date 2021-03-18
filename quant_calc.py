@@ -15,6 +15,7 @@ from astropy.visualization import (MinMaxInterval, LogStretch,
 import argparse
 from radio_beam import Beam
 from astropy.visualization.wcsaxes import SphericalCircle, Quadrangle
+import matplotlib
 
 
 parser = argparse.ArgumentParser(description='Calculate Emission measure and Optical depth as function of position')
@@ -25,6 +26,10 @@ args = parser.parse_args()
 
 inputfile=args.inputfile
 
+matplotlib.rcParams['font.size'] = 16
+matplotlib.rcParams['figure.figsize'] = [6.8,5.5]
+matplotlib.rcParams['figure.dpi'] = 120
+matplotlib.rcParams['font.sans-serif'] = "Nimbus Roman"
 
 
 
@@ -106,6 +111,15 @@ def optical_depth(inputfile):
 	ax.set_xlim(centre[0]-300, centre[0]+300)
 	ax.set_ylim(centre[1]-300, centre[1]+300)
 
+	ra = ax.coords[0]
+	ra.set_format_unit('degree', decimal=True)
+	#ra.set_ticks(number=4)
+
+	dec=ax.coords[1]
+	dec.set_format_unit('degree', decimal=True)
+	#dec.set_ticks(number=4)
+	#ax.set_title('8-12 GHz, 5\u03C3 mask ')
+
 	#ax.grid(True)
 
 	plt.show()
@@ -131,6 +145,14 @@ def em(inputfile):
                       stretch=SqrtStretch())
 
 	fig=plt.figure(1)
+	fig.subplots_adjust(
+		top=0.952,
+		bottom=0.113,
+		left=0.201,
+		right=0.862,
+		hspace=0.125,
+		wspace=0.2
+	)
 	ax=fig.add_subplot(111, projection=wcs, slices=('x','y'))
 	em_map=ax.imshow(emission_measure, origin='lower', cmap='viridis', norm=norm, vmax=np.max(emission_measure), vmin=np.min(emission_measure))
 	ax.set_xlabel('Right Ascension\nJ2000')
@@ -186,7 +208,7 @@ def em(inputfile):
 	dCL = CL * m.sqrt( (dd/d)**2 + (dL/L)**2 )
 	dens_point = wcs.world_to_pixel(dens_coord)
 	em_val = emission_measure[dens_x, dens_y]
-	d_em_val = 1000.0
+	d_em_val = 1000.
 
 	def density(value, CL):
 		x = float(em_val)/float(CL)
@@ -195,8 +217,9 @@ def em(inputfile):
 
 	density = density(em, CL)
 	ddensity = 0.5 * m.sqrt( (d_em_val/em_val)**2 + (dCL/CL)**2 )
+	print('Angular length of chord is:', L, 'pm', dL, '"')
 	print('Length of Chord in pc:', CL, 'pm', dCL, 'pc')
-	print('Emission Measure is', em_val)
+	print('Emission Measure is', em_val, 'pm', d_em_val, 'pc cm^-6')
 	print('Density is', density, 'pm', ddensity, 'cm^-3')
 
 	plt.show()
@@ -205,32 +228,6 @@ def em(inputfile):
 region=[350.138, 61.2, 0.04, 0.02]
 
 
-L = 0.08 * 60 * 60 #apparent angular chord length in this plot, arcseconds
-dL = 0.01 * 60 * 60
-
-d = 2993.440 # distance to nebula in pc
-dd = 136.388 #error, pc
-
-CL = L * d * 1/206265 * m.cos(61.2 * m.pi/180) #pc, true chord length in pc
-dCL = CL * m.sqrt( (dd/d)**2 + (dL/L)**2 )
-
-
-print('The angular chord length is:', L, 'pm', dL, 'arseconds')
-print('The distane to the Nebula is:', d, 'pm', dd, 'pc')
-print('Length of Chord in pc:', CL, 'pm', dCL, 'pc')
-
-em_val = 29231.7 # pc/(cm^6)
-d_em_val = 1000.0
-print('Emission Measure is', em_val)
-
-def density(value, CL):
-	x = float(em_val)/float(CL)
-	density = x**0.5 # per cubic cm:)
-	return density
-
-density = density(em, CL)
-ddensity = 0.5 * m.sqrt( (d_em_val/em_val)**2 + (dCL/CL)**2 )
-print('Density is', density, 'pm', ddensity, 'cm^-3')
 
 emission_measure=em(inputfile)
-#tau=optical_depth(inputfile)
+tau=optical_depth(inputfile)
