@@ -139,7 +139,7 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 	if contour_file != False:
 		contours=contour_plot(ax, contour_file, contour_type, beam)
 
-	main_image=ax.imshow(X=data, cmap='plasma', origin='lower', norm=norm, vmax=np.max(data) , vmin=np.min(data), transform=ax.get_transform(wcs.celestial))
+	main_image=ax.imshow(X=data, cmap='plasma', origin='lower',	 norm=norm, vmax=np.max(data) , vmin=np.min(data), transform=ax.get_transform(wcs.celestial))
 	cbar=figure.colorbar(main_image)
 
 	if hrd['TELESCOP'] == 'Spitzer':
@@ -154,7 +154,7 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 	ax.set_xlim(centre[0]-imsize, centre[0]+imsize)
 	ax.set_ylim(centre[1]-imsize, centre[1]+imsize)
 
-	ax.set_xlabel('Right Ascension J2000\n Contours at 0.1, 0.5, 1, 3, 6 MJy/sr')
+	ax.set_xlabel('Right Ascension J2000\n Contours at 0.5, 3, 5, 10, 15 MJy/sr')
 	ax.set_ylabel('Declination J2000')
 	cbar.set_label('Surface Brigthness (MJy/Sr)')
 	ra = ax.coords[0]
@@ -164,7 +164,7 @@ def image_plot(inputfile, d_range, imsize, outputfile):
 	dec=ax.coords[1]
 	dec.set_format_unit('degree', decimal=True)
 	dec.set_ticks(number=4)
-	ax.set_title('10-11 GHz, 5\u03C3 mask ')
+	ax.set_title('8-12 GHz, 5\u03C3 mask ')
 
 
 
@@ -226,7 +226,7 @@ def contour_plot(ax, contour_file, contour_type, image_beam):
 
 	if contour_type == "automatic":
 		spacing = contour_bias
-		n = 5 #number of contours
+		n = 6 #number of contours
 		ub = np.max(cdata)
 		lb = np.min(cdata)
 		def level_func(lb, ub, n, spacing=1.1):
@@ -234,8 +234,9 @@ def contour_plot(ax, contour_file, contour_type, image_beam):
 			dx = 1.0 / (n-1)
 			return [lb + (i*dx)**spacing*span for i in range(n)]
 		levels=level_func(lb, ub, n, spacing=float(spacing))
+		levels = np.array(levels)[np.array(levels) > 0.]
 		print('Generated Levels for contour are: ', levels, 'MJy/sr')
-		CS = ax.contour(cdata, levels=levels, colors='black', transform=ax.get_transform(cwcs.celestial), alpha=0.5)
+		CS = ax.contour(cdata, levels=levels, colors='black', transform=ax.get_transform(cwcs.celestial), alpha=1.0,linewidths=1)
 	if contour_type == "sigma":
 		contour_levels=list(map(float, args.contour_levels))
 		sigma_levels=np.array(contour_levels)
@@ -248,7 +249,7 @@ def contour_plot(ax, contour_file, contour_type, image_beam):
 		levels=list(map(float, args.contour_levels))
 		print('Contour Levels are: ', levels, 'MJy/sr')
 		CS = ax.contour(cdata, levels=levels, norm=norm, transform=ax.get_transform(cwcs.celestial),
-				   colors='white', alpha=0.5)
+				   colors='white', alpha=0.5, linewidths=1.0)
 
 	#CS.levels = [nf(val) for val in CS.levels]
 
