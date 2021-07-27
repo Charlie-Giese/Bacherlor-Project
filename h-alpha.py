@@ -26,6 +26,8 @@ matplotlib.rcParams['font.sans-serif'] = "Nimbus Roman"
 
 # IMPORTING RADIO DATA AND MAKING NECESSARY CONVERSIONS
 
+print('Importing Radio band data')
+
 radio_image_filename = sys.argv[1]
 
 
@@ -55,6 +57,8 @@ wcs_R = WCS(header_R)[0,0,:,:]
 
 #IMPORTING H-ALPHA DATA AND MAKING NECESSARY CONVERSIONS
 
+print('Importing H-Alpha data')
+
 inputfile_0= 'hlsp_heritage_hst_wfc3-uvis_bubble_nebula_f656n_v1_drc.fits'
 with fits.open(inputfile_0) as hdul:
 	data_0=hdul[0].data
@@ -73,7 +77,6 @@ wl_0_um=wl_0 * 1e-4
 
 N_H=6.41e21  #atoms cm−2
 A_V = N_H/(1.9e21)
-print('A(V)=%d'%A_V)
 R_V=3.1
 X=1/wl_0_um
 A_lambda = A_V * X / R_V
@@ -91,11 +94,13 @@ EM_ha = smoothed / 1.17e-7
 
 """SETTING UP THE COORDINATES OF THE 4 LINES"""
 
-l_coord_1 = SkyCoord(350.22, 61.20, unit='deg', frame='fk5')
-r_coord_1 = SkyCoord(350.15, 61.20, unit='deg', frame='fk5')
+print('Calculating coordinates of slices')
 
-l_coord_2 = SkyCoord(350.22, 61.19, unit='deg', frame='fk5')
-r_coord_2 = SkyCoord(350.15, 61.19, unit='deg', frame='fk5')
+l_coord_1 = SkyCoord(350.22, 61.205, unit='deg', frame='fk5')
+r_coord_1 = SkyCoord(350.15, 61.205, unit='deg', frame='fk5')
+
+l_coord_2 = SkyCoord(350.22, 61.195, unit='deg', frame='fk5')
+r_coord_2 = SkyCoord(350.15, 61.195, unit='deg', frame='fk5')
 
 #l_coord_3 = SkyCoord(350.22, 61.18, unit='deg', frame='fk5')
 #r_coord_3 = SkyCoord(350.15, 61.18, unit='deg', frame='fk5')
@@ -164,10 +169,12 @@ ax.set_ylabel('Emission Measure, $pc\:cm^{-6}$', labelpad=25.)
 ax0 = fig.add_subplot(121)
 ax0.plot(x_R1, radio_em_vals_1)
 ax0.plot(x_H1, h_alpha_em_vals_1)
+ax0.set_yscale('log')
 ax0.set_title('Dec = 61.20\N{DEGREE SIGN}')
-ax1 = fig.add_subplot(222)
+ax1 = fig.add_subplot(122)
 ax1.plot(x_R2, radio_em_vals_2)
 ax1.plot(x_H2, h_alpha_em_vals_2)
+ax1.set_yscale('log')
 ax1.set_title('Dec = 61.19\N{DEGREE SIGN}')
 #ax2 = fig.add_subplot(223)
 #ax2.plot(x_R3, radio_em_vals_3)
@@ -185,7 +192,8 @@ ax1.label_outer()
 #ax2.label_outer()
 #ax3.label_outer()
 
-plt.savefig(radio_image_filename+'__EM_COMP.png')
+#plt.savefig(radio_image_filename+'__EM_COMP.png')
+plt.show()
 
 """PLOTTING RADIO EMISSION MEASURE"""
 
@@ -214,7 +222,9 @@ ax.set_xlabel('Right Ascension J2000')
 dec=ax.coords[1]
 dec.set_format_unit('degree', decimal=True)
 ax.set_ylabel('Declination')
-plt.savefig(radio_image_filename+'__R-EM.png')
+#plt.savefig(radio_image_filename+'__R-EM.png')
+plt.show()
+
 
 """PLOTTING H-ALPHA emission measure"""
 
@@ -236,7 +246,8 @@ ax_01.set_xlabel('Right Ascension J2000')
 dec=ax_01.coords[1]
 dec.set_format_unit('degree', decimal=True)
 ax_01.set_ylabel('Declination')
-plt.savefig(radio_image_filename+'__HA-EM.png')
+#plt.savefig(radio_image_filename+'__HA-EM.png')
+plt.show()
 
 #Plotting non-smoothed H-Alpha
 
@@ -321,4 +332,6 @@ ax_ratio.legend()
 ax_ratio.set_xlabel('Arcseconds left of 350.22\N{DEGREE SIGN}')
 ax_ratio.set_ylabel('H\u03B1 EM / Radio EM')
 ax_ratio.set_ylim(0, 3.)
-plt.savefig(radio_image_filename+'__RATIO.png')
+#plt.savefig(radio_image_filename+'__RATIO.png')
+plt.show()
+
