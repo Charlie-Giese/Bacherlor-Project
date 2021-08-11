@@ -96,17 +96,14 @@ EM_ha = smoothed / 1.17e-7
 
 print('Calculating coordinates of slices')
 
-l_coord_1 = SkyCoord(350.22, 61.205, unit='deg', frame='fk5')
-r_coord_1 = SkyCoord(350.15, 61.205, unit='deg', frame='fk5')
+l_coord_1 = SkyCoord(350.22, 61.202, unit='deg', frame='fk5')
+r_coord_1 = SkyCoord(350.15, 61.202, unit='deg', frame='fk5')
 
-l_coord_2 = SkyCoord(350.22, 61.195, unit='deg', frame='fk5')
-r_coord_2 = SkyCoord(350.15, 61.195, unit='deg', frame='fk5')
+l_coord_2 = SkyCoord(350.22, 61.197, unit='deg', frame='fk5')
+r_coord_2 = SkyCoord(350.15, 61.197, unit='deg', frame='fk5')
 
-#l_coord_3 = SkyCoord(350.22, 61.18, unit='deg', frame='fk5')
-#r_coord_3 = SkyCoord(350.15, 61.18, unit='deg', frame='fk5')
-
-#l_coord_4 = SkyCoord(350.22, 61.17, unit='deg', frame='fk5')
-#r_coord_4 = SkyCoord(350.15, 61.17, unit='deg', frame='fk5')
+l_coord_3 = SkyCoord(350.22, 61.192, unit='deg', frame='fk5')
+r_coord_3 = SkyCoord(350.15, 61.192, unit='deg', frame='fk5')
 
 l_pixel_radio_1 = wcs_R.world_to_array_index(l_coord_1)
 r_pixel_radio_1 = wcs_R.world_to_array_index(r_coord_1)
@@ -118,29 +115,22 @@ r_pixel_radio_2 = wcs_R.world_to_array_index(r_coord_2)
 l_pixel_h_alpha_2 = wcs_H.world_to_array_index(l_coord_2)
 r_pixel_h_alpha_2 = wcs_H.world_to_array_index(r_coord_2)
 
-#l_pixel_radio_3 = wcs_R.world_to_array_index(l_coord_3)
-#r_pixel_radio_3 = wcs_R.world_to_array_index(r_coord_3)
-#l_pixel_h_alpha_3 = wcs_H.world_to_array_index(l_coord_3)
-#r_pixel_h_alpha_3 = wcs_H.world_to_array_index(r_coord_3)
-
-#l_pixel_radio_4 = wcs_R.world_to_array_index(l_coord_4)
-#r_pixel_radio_4 = wcs_R.world_to_array_index(r_coord_4)
-#l_pixel_h_alpha_4 = wcs_H.world_to_array_index(l_coord_4)
-#r_pixel_h_alpha_4 = wcs_H.world_to_array_index(r_coord_4)
+l_pixel_radio_3 = wcs_R.world_to_array_index(l_coord_3)
+r_pixel_radio_3 = wcs_R.world_to_array_index(r_coord_3)
+l_pixel_h_alpha_3 = wcs_H.world_to_array_index(l_coord_3)
+r_pixel_h_alpha_3 = wcs_H.world_to_array_index(r_coord_3)
 
 """EXTRACTING EMISSION MEASURE VALUES"""
 
 radio_em_vals_1 = em[l_pixel_radio_1[0] , l_pixel_radio_1[1] : r_pixel_radio_1[1]]
 radio_em_vals_2 = em[l_pixel_radio_2[0] , l_pixel_radio_2[1] : r_pixel_radio_2[1]]
-#radio_em_vals_3 = em[l_pixel_radio_3[0] , l_pixel_radio_3[1] : r_pixel_radio_3[1]]
-#radio_em_vals_4 = em[l_pixel_radio_4[0] , l_pixel_radio_4[1] : r_pixel_radio_4[1]]
+radio_em_vals_3 = em[l_pixel_radio_3[0] , l_pixel_radio_3[1] : r_pixel_radio_3[1]]
 
 """So along the line, there are 3064/173 more values in Halpha than radio"""
 
 h_alpha_em_vals_1 = EM_ha[l_pixel_h_alpha_1[0] , l_pixel_h_alpha_1[1] : r_pixel_h_alpha_1[1]]
 h_alpha_em_vals_2 = EM_ha[l_pixel_h_alpha_2[0] , l_pixel_h_alpha_2[1] : r_pixel_h_alpha_2[1]]
-#h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_h_alpha_3[1]]
-#h_alpha_em_vals_4 = EM_ha[l_pixel_h_alpha_4[0] , l_pixel_h_alpha_4[1] : r_pixel_h_alpha_4[1]]
+h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_h_alpha_3[1]]
 
 """PLOTTING EMISSION MEASURE VALUES"""
 
@@ -148,10 +138,8 @@ x_R1 = np.linspace(0, 252, len(radio_em_vals_1))
 x_H1 = np.linspace(0, 252, len(h_alpha_em_vals_1))
 x_R2 = np.linspace(0, 252, len(radio_em_vals_2))
 x_H2 = np.linspace(0, 252, len(h_alpha_em_vals_2))
-#x_R3 = np.linspace(0, 252, len(radio_em_vals_3))
-#x_H3 = np.linspace(0, 252, len(h_alpha_em_vals_3))
-#x_R4 = np.linspace(0, 252, len(radio_em_vals_4))
-#x_H4 = np.linspace(0, 252, len(h_alpha_em_vals_4))
+x_R3 = np.linspace(0, 252, len(radio_em_vals_3))
+x_H3 = np.linspace(0, 252, len(h_alpha_em_vals_3))
 
 fig = plt.figure(1)
 ax = fig.add_subplot(111)
@@ -166,31 +154,28 @@ ax.set_ylabel('Emission Measure, $pc\:cm^{-6}$', labelpad=25.)
 
 
 
-ax0 = fig.add_subplot(121)
+ax0 = fig.add_subplot(311)
 ax0.plot(x_R1, radio_em_vals_1)
 ax0.plot(x_H1, h_alpha_em_vals_1)
 ax0.set_yscale('log')
-ax0.set_title('Dec = 61.20\N{DEGREE SIGN}')
-ax1 = fig.add_subplot(122)
+ax0.set_title('Dec = 61.202\N{DEGREE SIGN}')
+ax1 = fig.add_subplot(312)
 ax1.plot(x_R2, radio_em_vals_2)
 ax1.plot(x_H2, h_alpha_em_vals_2)
 ax1.set_yscale('log')
-ax1.set_title('Dec = 61.19\N{DEGREE SIGN}')
-#ax2 = fig.add_subplot(223)
-#ax2.plot(x_R3, radio_em_vals_3)
-#ax2.plot(x_H3, h_alpha_em_vals_3)
-#ax2.set_title('Dec = 61.18\N{DEGREE SIGN}')
-#ax3 = fig.add_subplot(224)
-#ax3.plot(x_R4, radio_em_vals_4)
-#ax3.plot(x_H4, h_alpha_em_vals_4)
-#ax3.set_title('Dec = 61.17\N{DEGREE SIGN}')
+ax1.set_title('Dec = 61.197\N{DEGREE SIGN}')
+ax2 = fig.add_subplot(313)
+ax2.plot(x_R3, radio_em_vals_3)
+ax2.plot(x_H3, h_alpha_em_vals_3)
+ax2.set_yscale('log')
+ax2.set_title('Dec = 61.192\N{DEGREE SIGN}')
+
 
 # Hide x labels and tick labels for top plots and y ticks for right plots.
 
 ax0.label_outer()
 ax1.label_outer()
-#ax2.label_outer()
-#ax3.label_outer()
+ax2.label_outer()
 
 #plt.savefig(radio_image_filename+'__EM_COMP.png')
 plt.show()
@@ -208,8 +193,7 @@ cbar.set_label('Emission Measure, $pc\:cm^{-6}$')
 
 ax.plot((l_pixel_radio_1[1], r_pixel_radio_1[1]), (l_pixel_radio_1[0], r_pixel_radio_1[0]), c='white')
 ax.plot((l_pixel_radio_2[1], r_pixel_radio_2[1]), (l_pixel_radio_2[0], r_pixel_radio_2[0]), c='white')
-#ax.plot((l_pixel_radio_3[1], r_pixel_radio_3[1]), (l_pixel_radio_3[0], r_pixel_radio_3[0]), c='white')
-#ax.plot((l_pixel_radio_4[1], r_pixel_radio_4[1]), (l_pixel_radio_4[0], r_pixel_radio_4[0]), c='white')
+ax.plot((l_pixel_radio_3[1], r_pixel_radio_3[1]), (l_pixel_radio_3[0], r_pixel_radio_3[0]), c='white')
 
 dims=np.shape(em)
 centre=(dims[0]/2., dims[1]/2.)
@@ -227,7 +211,7 @@ plt.show()
 
 
 """PLOTTING H-ALPHA emission measure"""
-
+"""
 plot_data=EM_ha
 norm = ImageNormalize(plot_data, interval=MinMaxInterval(), stretch=SqrtStretch())
 fig_H1=plt.figure(num=3)
@@ -248,7 +232,7 @@ dec.set_format_unit('degree', decimal=True)
 ax_01.set_ylabel('Declination')
 #plt.savefig(radio_image_filename+'__HA-EM.png')
 plt.show()
-
+"""
 #Plotting non-smoothed H-Alpha
 
 """
@@ -277,61 +261,52 @@ x = np.linspace(0, 252, num = 170)
 
 R_inter_1 = interp1d(x_R1, radio_em_vals_1, kind = 'cubic')
 R_inter_2 = interp1d(x_R2, radio_em_vals_2, kind = 'cubic')
-#R_inter_3 = interp1d(x_R3, radio_em_vals_3, kind = 'cubic')
-#R_inter_4 = interp1d(x_R4, radio_em_vals_4, kind = 'cubic')
+R_inter_3 = interp1d(x_R3, radio_em_vals_3, kind = 'cubic')
 
 H_inter_1 = interp1d(x_H1, h_alpha_em_vals_1, kind = 'cubic')
 H_inter_2 = interp1d(x_H2, h_alpha_em_vals_2, kind = 'cubic')
-#H_inter_3 = interp1d(x_H3, h_alpha_em_vals_3, kind = 'cubic')
-#H_inter_4 = interp1d(x_H4, h_alpha_em_vals_4, kind = 'cubic')
+H_inter_3 = interp1d(x_H3, h_alpha_em_vals_3, kind = 'cubic')
 
 R1 = R_inter_1(x)
 R2 = R_inter_2(x)
-#R3 = R_inter_3(x)
-#R4 = R_inter_4(x)
+R3 = R_inter_3(x)
 
 H1 = H_inter_1(x)
 H2 = H_inter_2(x)
-#H3 = H_inter_3(x)
-#H4 = H_inter_4(x)
+H3 = H_inter_3(x)
 
 #Rescale to 0-1
 R1_0 = (R1 + 1e4)
 R2_0 = (R2 + 1e4)
-#R3_0 = (R3 + 1e4)
-#R4_0 = (R4 + 1e4)
+R3_0 = (R3 + 1e4)
 
 H1_0 = (H1 + 1e4)
 H2_0 = (H2 + 1e4)
-#H3_0 = (H3 + 1e4)
-#H4_0 = (H4 + 1e4)
+H3_0 = (H3 + 1e4)
 
 R1_scale = R1_0 / np.max(R1_0)
 R2_scale = R2_0 / np.max(R2_0)
-#R3_scale = R3_0 / np.max(R3_0)
-#R4_scale = R4_0 / np.max(R4_0)
+R3_scale = R3_0 / np.max(R3_0)
 
 H1_scale = H1_0 / np.max(H1_0)
 H2_scale = H2_0 / np.max(H2_0)
-#H3_scale = H3_0 / np.max(H3_0)
-#H4_scale = H4_0 / np.max(H4_0)
-
+H3_scale = H3_0 / np.max(H3_0)
 
 ratio_1 = H1_scale / R1_scale
 ratio_2 = H2_scale / R2_scale
-#ratio_3 = H3_scale / R3_scale
-#ratio_4 = H4_scale / R4_scale
+ratio_3 = H3_scale / R3_scale
 
 ratio_fig = plt.figure(num=5)
 ax_ratio = ratio_fig.add_subplot(111)
-ax_ratio.plot(x, ratio_1, label='61.20\N{DEGREE SIGN}')
-ax_ratio.plot(x, ratio_2, label='61.19\N{DEGREE SIGN}')
-#ax_ratio.plot(x, ratio_3, label='61.18\N{DEGREE SIGN}')
-#ax_ratio.plot(x, ratio_4, label='61.17\N{DEGREE SIGN}')
+ax_ratio.plot(x, ratio_1, label='61.202\N{DEGREE SIGN}')
+ax_ratio.plot(x, ratio_2, label='61.197\N{DEGREE SIGN}')
+ax_ratio.plot(x, ratio_3, label='61.192\N{DEGREE SIGN}')
+
 ax_ratio.legend()
 ax_ratio.set_xlabel('Arcseconds left of 350.22\N{DEGREE SIGN}')
 ax_ratio.set_ylabel('H\u03B1 EM / Radio EM')
-ax_ratio.set_ylim(0, 3.)
+ax_ratio.set_yscale('log')
+#ax_ratio.set_ylim(0, 3.)
 #plt.savefig(radio_image_filename+'__RATIO.png')
 plt.show()
 
