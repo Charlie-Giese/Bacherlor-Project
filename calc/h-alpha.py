@@ -141,12 +141,10 @@ h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_
 """SETTING UP FIGURE"""
 
 fig = plt.figure(1)
-ax1 = fig.add_subplot(311, label = 'em_comp', xticks=False)
-ax1.xaxis.set_visible(False)
-ax2 = fig.add_subplot(312, label = 'radio_image', projection = wcs_R, slices=('x', 'y'), xticks=False)
-ax2.xaxis.set_visible(False)
-ax3 = fig.add_subplot(313, label = 'halpha_iamge')
-ax3.xaxis.set_visible(False)
+ax1 = fig.add_subplot(311, label = 'em_comp', xticks=[])
+ax2 = fig.add_subplot(313, label = 'radio_image', projection = wcs_R, slices=('x', 'y'))
+ax3 = fig.add_subplot(312, label = 'halpha_iamge', xticks=[])
+
 
 
 """PLOTTING EMISSION MEASURE VALUES"""
@@ -172,10 +170,10 @@ x_H3 = np.linspace(0, 252, len(h_alpha_em_vals_3))
 #ax0.set_yscale('log')
 #ax0.set_title('Dec = 61.202\N{DEGREE SIGN}')
 #ax1 = fig.add_subplot(312)
-ax1.plot(x_R2, radio_em_vals_2)
-ax1.plot(x_H2, h_alpha_em_vals_2)
-ax1.set_yscale('log')
-ax1.set_title('Dec = 61.197\N{DEGREE SIGN}')
+#ax1.plot(x_R2, radio_em_vals_2)
+#ax1.plot(x_H2, h_alpha_em_vals_2)
+#ax1.set_yscale('log')
+#ax1.set_title('Dec = 61.197\N{DEGREE SIGN}')
 #ax2 = fig.add_subplot(313)
 #ax2.plot(x_R3, radio_em_vals_3)
 #ax2.plot(x_H3, h_alpha_em_vals_3)
@@ -219,8 +217,7 @@ ax2.set_xlabel('Right Ascension J2000')
 dec=ax2.coords[1]
 dec.set_format_unit('degree', decimal=True)
 ax2.set_ylabel('Declination')
-#plt.savefig(radio_image_filename+'__R-EM.png')
-#plt.show()
+
 
 
 """PLOTTING RATIO OF BOTH"""
@@ -247,14 +244,14 @@ ratio_1 = H1 / R1
 ratio_2 = H2 / R2
 ratio_3 = H3 / R3
 
-ax3.plot(x, ratio_1, label='61.202\N{DEGREE SIGN}')
-ax3.plot(x, ratio_2, label='61.197\N{DEGREE SIGN}')
-ax3.plot(x, ratio_3, label='61.192\N{DEGREE SIGN}')
+#ax3.plot(x, ratio_1, label='61.202\N{DEGREE SIGN}')
+#ax3.plot(x, ratio_2, label='61.197\N{DEGREE SIGN}')
+#ax3.plot(x, ratio_3, label='61.192\N{DEGREE SIGN}')
 
-ax3.legend()
-ax3.set_xlabel('Arcseconds left of 350.22\N{DEGREE SIGN}')
-ax3.set_ylabel('H\u03B1 EM / Radio EM')
-ax3.set_yscale('log')
+#ax3.legend()
+#ax3.set_xlabel('Arcseconds left of 350.22\N{DEGREE SIGN}')
+#ax3.set_ylabel('H\u03B1 EM / Radio EM')
+#ax3.set_yscale('log')
 #ax3.set_ylim(0, 3.)
 #plt.savefig(radio_image_filename+'__RATIO.png')
 plt.show()
