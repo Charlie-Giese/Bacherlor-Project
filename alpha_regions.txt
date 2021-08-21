@@ -1,9 +1,0 @@
-#CRTFv0
-#Arc above brightest part
-centerbox [ [ 23h20m46s , +61.12.12.5 ] , [ 1.397arcmin , 0.63arcmin ] ]
-#really bright bit
-centerbox [ [ 23h20m41s , +61.11.42.8 ] , [ 0.766arcmin, 0.540arcmin ] ]
-#Structure above bubble 
-centerbox [ [ 23h20m47s , +61.13.38.9 ] , [ 1.487arcmin , 0.946arcmin]  ]
-#left edge of bubble
-centerbox[ [ 23h20m52 , +61.10.46.0 ] , [ 0.631arcmin , 1.711arcmin ] ]
