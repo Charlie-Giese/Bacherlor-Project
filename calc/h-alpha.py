@@ -140,10 +140,25 @@ h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_
 
 """SETTING UP FIGURE"""
 
-fig = plt.figure(1)
-ax1 = fig.add_subplot(311, label = 'em_comp', xticks=[])
-ax2 = fig.add_subplot(313, label = 'radio_image', projection = wcs_R, slices=('x', 'y'))
-ax3 = fig.add_subplot(312, label = 'halpha_iamge', xticks=[])
+fig = plt.figure(constrained_layout=True, figsize=(10, 4))
+subfigs = fig.subfigures(3, 1, wspace=0.07, width_ratios=[1, 1, 1])
+
+axsTop = subfigs[0].subplots(3, 1, sharex=True, xticks=[])
+axMid = subfigs[2].add_subplot(111)
+axBot = subfigs[1].add_subplot(111, projection = wcs_R, slices=('x', 'y'), xticks=[])
+
+
+for ax in axsTop:
+	ax.set_yscale('log')
+	ax.set_ylabel('Emission Measure, $pc\:cm^{-6}$', labelpad=25.)
+
+axMid.legend()
+axMid.set_ylabel('H\u03B1 EM / Radio EM')
+axMid.set_yscale('log')
+axMid.set_ylim(0, 3.)
+
+axBot.set_xlabel('Right Ascension')
+axBot.set_ylabel('Declination')
 
 
 
