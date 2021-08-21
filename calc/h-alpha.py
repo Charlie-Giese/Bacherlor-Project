@@ -43,21 +43,21 @@ def import_radio(file):
 
 	beam = Beam.from_fits_header(header_R)
 	SB_1masked=np.ma.masked_invalid(data_1)
-	return SB_1masked
+	return SB_1masked, header_R
 
 
 def em(radio_flux):
 
 	T=8000 #K
 	v=8e9 # central frequency of our broadband observations
-	S_erg = SB_1masked * 10**-17	 #this is the surface brightness in units of ergs/cm^2/sr
+	S_erg = radio_flux * 10**-17	 #this is the surface brightness in units of ergs/cm^2/sr
 	c=3e10 #speed of light in cgs
 	k_b=1.38e-16 #boltzmann constant in cgs
 	emission_measure = (-1 *np.log(1 - ((S_erg*c**2)/(2*k_b*T*(v**2)))) * 1/(3.28e-7) * (T/1e4)**1.35 * (v/1e9)**2.1)
 	return emission_measure
 
 file = sys.argv[1]
-radio_flux = import_radio(file)
+radio_flux, header_R = import_radio(file)
 em=em(radio_flux)
 wcs_R = WCS(header_R)[0,0,:,:]
 
@@ -84,7 +84,7 @@ wl_H_um=wl_H * 1e-4
 N_H=6.41e21  #atoms cm−2
 A_V = N_H/(1.9e21)
 R_V=3.1
-X=1/wl_0_um
+X=1/wl_H_um
 A_lambda = A_V * X / R_V
 flux_true = flux_H * 10**(0.318 * A_V)
 
@@ -141,9 +141,13 @@ h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_
 """SETTING UP FIGURE"""
 
 fig = plt.figure(1)
-ax1 = fig.add_subplot(311, label = 'em_comp')
-ax2 = fig.add_subplot(312, label = 'radio_image', projection = wcs_R, slices=('x', 'y'))
+ax1 = fig.add_subplot(311, label = 'em_comp', xticks=False)
+ax1.xaxis.set_visible(False)
+ax2 = fig.add_subplot(312, label = 'radio_image', projection = wcs_R, slices=('x', 'y'), xticks=False)
+ax2.xaxis.set_visible(False)
 ax3 = fig.add_subplot(313, label = 'halpha_iamge')
+ax3.xaxis.set_visible(False)
+
 
 """PLOTTING EMISSION MEASURE VALUES"""
 
@@ -197,7 +201,7 @@ norm = ImageNormalize(em, interval=MinMaxInterval(), stretch=SqrtStretch())
 em_map=ax2.imshow(em, origin='lower', cmap='plasma', norm=norm, vmax=3e6, vmin=0)
 ax2.set_xlabel('Right Ascension\nJ2000')
 ax2.set_ylabel('Declination')
-fig.colorbar(em_map, ax2)
+cbar = fig.colorbar(em_map, ax2)
 cbar.set_label('Emission Measure, $pc\:cm^{-6}$')
 
 ax2.plot((l_pixel_radio_1[1], r_pixel_radio_1[1]), (l_pixel_radio_1[0], r_pixel_radio_1[0]), c='white')
