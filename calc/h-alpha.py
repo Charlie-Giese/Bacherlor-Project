@@ -1,3 +1,8 @@
+#Author: Charlie Giese
+#Code for comparing VLA radio data with H-alpha image of Bubble Nebula
+
+#Imports
+
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
@@ -26,22 +31,22 @@ matplotlib.rcParams['font.sans-serif'] = "Nimbus Roman"
 
 # IMPORTING RADIO DATA AND MAKING NECESSARY CONVERSIONS
 
-print('Importing Radio band data')
+def import_radio(file):
 
-radio_image_filename = sys.argv[1]
+	print('Importing Radio band data')
+
+	radio_image_filename = file
+
+	with fits.open(radio_image_filename) as hdul_1:
+		data_1=hdul_1[0].data[0,0,:,:]
+		header_R = fits.getheader(radio_image_filename)
+
+	beam = Beam.from_fits_header(header_R)
+	SB_1masked=np.ma.masked_invalid(data_1)
+	return SB_1masked
 
 
-with fits.open(radio_image_filename) as hdul_1:
-	data_1=hdul_1[0].data[0,0,:,:]
-header_R = fits.getheader(radio_image_filename)
-
-beam = Beam.from_fits_header(header_R)
-
-
-#SB_1=((data_1*u.Jy/u.beam).to(u.MJy/u.sr, equivalencies=u.beam_angular_area(beam))).value
-SB_1masked=np.ma.masked_invalid(data_1)
-
-def em(SB_1masked):
+def em(radio_flux):
 
 	T=8000 #K
 	v=8e9 # central frequency of our broadband observations
@@ -51,37 +56,37 @@ def em(SB_1masked):
 	emission_measure = (-1 *np.log(1 - ((S_erg*c**2)/(2*k_b*T*(v**2)))) * 1/(3.28e-7) * (T/1e4)**1.35 * (v/1e9)**2.1)
 	return emission_measure
 
-em=em(SB_1masked)
-
+file = sys.argv[1]
+radio_flux = import_radio(file)
+em=em(radio_flux)
 wcs_R = WCS(header_R)[0,0,:,:]
 
 
 #IMPORTING H-ALPHA DATA AND MAKING NECESSARY CONVERSIONS
 
 print('Importing H-Alpha data')
-
-inputfile_0= 'hlsp_heritage_hst_wfc3-uvis_bubble_nebula_f656n_v1_drc.fits'
-with fits.open(inputfile_0) as hdul:
-	data_0=hdul[0].data
-header_H = fits.getheader(inputfile_0)
+inputfile_H= 'hlsp_heritage_hst_wfc3-uvis_bubble_nebula_f656n_v1_drc.fits'
+with fits.open(inputfile_H) as hdul:
+	data_H=hdul[0].data
+header_H = fits.getheader(inputfile_H)
 
 wcs_H = WCS(header_H)
 
-where_are_NaNs = np.isnan(data_0)
-data_0[where_are_NaNs] = 0.0
+where_are_NaNs = np.isnan(data_H)
+data_H[where_are_NaNs] = 0.0
 
-equiv_0=header_H['PHOTFLAM'] * header_H['PHOTBW'] / header_H['D024ISCL']**2
+equiv_H=header_H['PHOTFLAM'] * header_H['PHOTBW'] / header_H['D024ISCL']**2
 
-flux_0=data_0*equiv_0*42545250225.0
-wl_0=header_H['PHOTPLAM'] #Angstrom
-wl_0_um=wl_0 * 1e-4
+flux_H=data_H*equiv_H*42545250225.0
+wl_H=header_H['PHOTPLAM'] #Angstrom
+wl_H_um=wl_H * 1e-4
 
 N_H=6.41e21  #atoms cm−2
 A_V = N_H/(1.9e21)
 R_V=3.1
 X=1/wl_0_um
 A_lambda = A_V * X / R_V
-flux_true = flux_0 * 10**(0.318 * A_V)
+flux_true = flux_H * 10**(0.318 * A_V)
 
 bmaj = 20
 bmin = 20
@@ -133,6 +138,13 @@ h_alpha_em_vals_1 = EM_ha[l_pixel_h_alpha_1[0] , l_pixel_h_alpha_1[1] : r_pixel_
 h_alpha_em_vals_2 = EM_ha[l_pixel_h_alpha_2[0] , l_pixel_h_alpha_2[1] : r_pixel_h_alpha_2[1]]
 h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_h_alpha_3[1]]
 
+"""SETTING UP FIGURE"""
+
+fig = plt.figure(1)
+ax1 = fig.add_subplot(311, label = 'em_comp')
+ax2 = fig.add_subplot(312, label = 'radio_image', projection = wcs_R, slices=('x', 'y'))
+ax3 = fig.add_subplot(313, label = 'halpha_iamge')
+
 """PLOTTING EMISSION MEASURE VALUES"""
 
 x_R1 = np.linspace(0, 252, len(radio_em_vals_1))
@@ -142,72 +154,105 @@ x_H2 = np.linspace(0, 252, len(h_alpha_em_vals_2))
 x_R3 = np.linspace(0, 252, len(radio_em_vals_3))
 x_H3 = np.linspace(0, 252, len(h_alpha_em_vals_3))
 
-fig = plt.figure(1)
-ax = fig.add_subplot(111)
-ax.spines['top'].set_color('none')
-ax.spines['bottom'].set_color('none')
-ax.spines['left'].set_color('none')
-ax.spines['right'].set_color('none')
-ax.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
+#ax1.spines['top'].set_color('none')
+#ax1.spines['bottom'].set_color('none')
+#ax1.spines['left'].set_color('none')
+#ax1.spines['right'].set_color('none')
+#ax1.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
 # Set common labels
-ax.set_xlabel('Arcseconds West of 350.22\N{DEGREE SIGN}')
-ax.set_ylabel('Emission Measure, $pc\:cm^{-6}$', labelpad=25.)
+#ax1.set_xlabel('Arcseconds West of 350.22\N{DEGREE SIGN}')
+#ax1.set_ylabel('Emission Measure, $pc\:cm^{-6}$', labelpad=25.)
 
-
-
-ax0 = fig.add_subplot(311)
-ax0.plot(x_R1, radio_em_vals_1)
-ax0.plot(x_H1, h_alpha_em_vals_1)
-ax0.set_yscale('log')
-ax0.set_title('Dec = 61.202\N{DEGREE SIGN}')
-ax1 = fig.add_subplot(312)
+#ax0.plot(x_R1, radio_em_vals_1)
+#ax0.plot(x_H1, h_alpha_em_vals_1)
+#ax0.set_yscale('log')
+#ax0.set_title('Dec = 61.202\N{DEGREE SIGN}')
+#ax1 = fig.add_subplot(312)
 ax1.plot(x_R2, radio_em_vals_2)
 ax1.plot(x_H2, h_alpha_em_vals_2)
 ax1.set_yscale('log')
 ax1.set_title('Dec = 61.197\N{DEGREE SIGN}')
-ax2 = fig.add_subplot(313)
-ax2.plot(x_R3, radio_em_vals_3)
-ax2.plot(x_H3, h_alpha_em_vals_3)
-ax2.set_yscale('log')
-ax2.set_title('Dec = 61.192\N{DEGREE SIGN}')
+#ax2 = fig.add_subplot(313)
+#ax2.plot(x_R3, radio_em_vals_3)
+#ax2.plot(x_H3, h_alpha_em_vals_3)
+#ax2.set_yscale('log')
+#ax2.set_title('Dec = 61.192\N{DEGREE SIGN}')
 
 
 # Hide x labels and tick labels for top plots and y ticks for right plots.
 
-ax0.label_outer()
-ax1.label_outer()
-ax2.label_outer()
+#ax0.label_outer()
+#ax1.label_outer()
+#ax2.label_outer()
 
 #plt.savefig(radio_image_filename+'__EM_COMP.png')
-plt.show()
+#plt.show()
+
 
 """PLOTTING RADIO EMISSION MEASURE"""
 
 norm = ImageNormalize(em, interval=MinMaxInterval(), stretch=SqrtStretch())
-fig_R=plt.figure(2)
-ax=fig_R.add_subplot(111, projection=wcs_R, slices=('x','y'))
-em_map=ax.imshow(em, origin='lower', cmap='plasma', norm=norm, vmax=3e6, vmin=0)
-ax.set_xlabel('Right Ascension\nJ2000')
-ax.set_ylabel('Declination')
-cbar=fig_R.colorbar(em_map)
+#fig_R=plt.figure(2)
+#ax=fig_R.add_subplot(111, projection=wcs_R, slices=('x','y'))
+em_map=ax2.imshow(em, origin='lower', cmap='plasma', norm=norm, vmax=3e6, vmin=0)
+ax2.set_xlabel('Right Ascension\nJ2000')
+ax2.set_ylabel('Declination')
+fig.colorbar(em_map, ax2)
 cbar.set_label('Emission Measure, $pc\:cm^{-6}$')
 
-ax.plot((l_pixel_radio_1[1], r_pixel_radio_1[1]), (l_pixel_radio_1[0], r_pixel_radio_1[0]), c='white')
-ax.plot((l_pixel_radio_2[1], r_pixel_radio_2[1]), (l_pixel_radio_2[0], r_pixel_radio_2[0]), c='white')
-ax.plot((l_pixel_radio_3[1], r_pixel_radio_3[1]), (l_pixel_radio_3[0], r_pixel_radio_3[0]), c='white')
+ax2.plot((l_pixel_radio_1[1], r_pixel_radio_1[1]), (l_pixel_radio_1[0], r_pixel_radio_1[0]), c='white')
+ax2.plot((l_pixel_radio_2[1], r_pixel_radio_2[1]), (l_pixel_radio_2[0], r_pixel_radio_2[0]), c='white')
+ax2.plot((l_pixel_radio_3[1], r_pixel_radio_3[1]), (l_pixel_radio_3[0], r_pixel_radio_3[0]), c='white')
 
 dims=np.shape(em)
 centre=(dims[0]/2., dims[1]/2.)
-ax.set_xlim(centre[0]-300, centre[0]+300)
-ax.set_ylim(centre[1]-300, centre[1]+300)
+ax2.set_xlim(centre[0]-300, centre[0]+300)
+ax2.set_ylim(centre[1]-300, centre[1]+300)
 
-ra = ax.coords[0]
+ra = ax2.coords[0]
 ra.set_format_unit('degree', decimal=True)
-ax.set_xlabel('Right Ascension J2000')
-dec=ax.coords[1]
+ax2.set_xlabel('Right Ascension J2000')
+dec=ax2.coords[1]
 dec.set_format_unit('degree', decimal=True)
-ax.set_ylabel('Declination')
+ax2.set_ylabel('Declination')
 #plt.savefig(radio_image_filename+'__R-EM.png')
+#plt.show()
+
+
+"""PLOTTING RATIO OF BOTH"""
+
+x = np.linspace(0, 252, num = 170)
+
+R_inter_1 = interp1d(x_R1, radio_em_vals_1, kind = 'cubic')
+R_inter_2 = interp1d(x_R2, radio_em_vals_2, kind = 'cubic')
+R_inter_3 = interp1d(x_R3, radio_em_vals_3, kind = 'cubic')
+
+H_inter_1 = interp1d(x_H1, h_alpha_em_vals_1, kind = 'cubic')
+H_inter_2 = interp1d(x_H2, h_alpha_em_vals_2, kind = 'cubic')
+H_inter_3 = interp1d(x_H3, h_alpha_em_vals_3, kind = 'cubic')
+
+R1 = R_inter_1(x)
+R2 = R_inter_2(x)
+R3 = R_inter_3(x)
+
+H1 = H_inter_1(x)
+H2 = H_inter_2(x)
+H3 = H_inter_3(x)
+
+ratio_1 = H1 / R1
+ratio_2 = H2 / R2
+ratio_3 = H3 / R3
+
+ax3.plot(x, ratio_1, label='61.202\N{DEGREE SIGN}')
+ax3.plot(x, ratio_2, label='61.197\N{DEGREE SIGN}')
+ax3.plot(x, ratio_3, label='61.192\N{DEGREE SIGN}')
+
+ax3.legend()
+ax3.set_xlabel('Arcseconds left of 350.22\N{DEGREE SIGN}')
+ax3.set_ylabel('H\u03B1 EM / Radio EM')
+ax3.set_yscale('log')
+#ax3.set_ylim(0, 3.)
+#plt.savefig(radio_image_filename+'__RATIO.png')
 plt.show()
 
 
@@ -256,58 +301,3 @@ ax_02.set_ylabel('Declination')
 plt.savefig(radio_image_filename+'__NONSMOOTHED.png')
 
 """
-"""PLOTTING RATIO OF BOTH"""
-
-x = np.linspace(0, 252, num = 170)
-
-R_inter_1 = interp1d(x_R1, radio_em_vals_1, kind = 'cubic')
-R_inter_2 = interp1d(x_R2, radio_em_vals_2, kind = 'cubic')
-R_inter_3 = interp1d(x_R3, radio_em_vals_3, kind = 'cubic')
-
-H_inter_1 = interp1d(x_H1, h_alpha_em_vals_1, kind = 'cubic')
-H_inter_2 = interp1d(x_H2, h_alpha_em_vals_2, kind = 'cubic')
-H_inter_3 = interp1d(x_H3, h_alpha_em_vals_3, kind = 'cubic')
-
-R1 = R_inter_1(x)
-R2 = R_inter_2(x)
-R3 = R_inter_3(x)
-
-H1 = H_inter_1(x)
-H2 = H_inter_2(x)
-H3 = H_inter_3(x)
-
-#Rescale to 0-1
-R1_0 = (R1 + 1e4)
-R2_0 = (R2 + 1e4)
-R3_0 = (R3 + 1e4)
-
-H1_0 = (H1 + 1e4)
-H2_0 = (H2 + 1e4)
-H3_0 = (H3 + 1e4)
-
-R1_scale = R1_0 / np.max(R1_0)
-R2_scale = R2_0 / np.max(R2_0)
-R3_scale = R3_0 / np.max(R3_0)
-
-H1_scale = H1_0 / np.max(H1_0)
-H2_scale = H2_0 / np.max(H2_0)
-H3_scale = H3_0 / np.max(H3_0)
-
-ratio_1 = H1_scale / R1_scale
-ratio_2 = H2_scale / R2_scale
-ratio_3 = H3_scale / R3_scale
-
-ratio_fig = plt.figure(num=5)
-ax_ratio = ratio_fig.add_subplot(111)
-ax_ratio.plot(x, ratio_1, label='61.202\N{DEGREE SIGN}')
-ax_ratio.plot(x, ratio_2, label='61.197\N{DEGREE SIGN}')
-ax_ratio.plot(x, ratio_3, label='61.192\N{DEGREE SIGN}')
-
-ax_ratio.legend()
-ax_ratio.set_xlabel('Arcseconds left of 350.22\N{DEGREE SIGN}')
-ax_ratio.set_ylabel('H\u03B1 EM / Radio EM')
-ax_ratio.set_yscale('log')
-#ax_ratio.set_ylim(0, 3.)
-#plt.savefig(radio_image_filename+'__RATIO.png')
-plt.show()
-
