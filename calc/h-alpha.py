@@ -141,134 +141,90 @@ h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_
 """SETTING UP FIGURE"""
 
 fig = plt.figure(constrained_layout=True, figsize=(10, 4))
-subfigs = fig.subfigures(3, 1, wspace=0.07, width_ratios=[1, 1, 1])
+subfigs = fig.subfigures(1, 3, wspace=0.07, width_ratios=[1, 1, 1])
 
-axsTop = subfigs[0].subplots(3, 1, sharex=True, xticks=[])
+axsTop = subfigs[0].subplots(3, 1, sharex=True)
 axMid = subfigs[2].add_subplot(111)
 axBot = subfigs[1].add_subplot(111, projection = wcs_R, slices=('x', 'y'), xticks=[])
 
+# Set common labels for axsTop
+ax1 = subfigs[0].add_subplot(111)
+ax1.set_xlabel('Arcseconds West of 350.22\N{DEGREE SIGN}')
+ax1.set_ylabel('Emission Measure, $pc\:cm^{-6}$', labelpad=25.)
+ax1.spines['top'].set_color('none')
+ax1.spines['bottom'].set_color('none')
+ax1.spines['left'].set_color('none')
+ax1.spines['right'].set_color('none')
+ax1.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
 
+x_arrays = [
+x_R1 = np.linspace(0, 252, len(radio_em_vals_1)),
+x_H1 = np.linspace(0, 252, len(h_alpha_em_vals_1)),
+x_R2 = np.linspace(0, 252, len(radio_em_vals_2)),
+x_H2 = np.linspace(0, 252, len(h_alpha_em_vals_2)),
+x_R3 = np.linspace(0, 252, len(radio_em_vals_3)),
+x_H3 = np.linspace(0, 252, len(h_alpha_em_vals_3))
+]
+
+xval_arrays = [radio_em_vals_1,h_alpha_em_vals_1,radio_em_vals_2,h_alpha_em_vals_2,radio_em_vals_3,h_alpha_em_vals_3]
+i,j = 0,1
+
+titles = ['Dec = 61.202\N{DEGREE SIGN}', 'Dec = 61.197\N{DEGREE SIGN}', 'Dec = 61.192\N{DEGREE SIGN}']
 for ax in axsTop:
 	ax.set_yscale('log')
 	ax.set_ylabel('Emission Measure, $pc\:cm^{-6}$', labelpad=25.)
+	ax.set_xticks(ticks=[])
+	ax.plot(x_arrays[i], xval_arrays[i])
+	ax.plot(x_arrays[j], xval_arrays[j])
+	ax.set_title(titles[i])
+	i += 1
+	j +=1
 
 axMid.legend()
 axMid.set_ylabel('H\u03B1 EM / Radio EM')
 axMid.set_yscale('log')
 axMid.set_ylim(0, 3.)
-
-axBot.set_xlabel('Right Ascension')
-axBot.set_ylabel('Declination')
-
-
-
-"""PLOTTING EMISSION MEASURE VALUES"""
-
-x_R1 = np.linspace(0, 252, len(radio_em_vals_1))
-x_H1 = np.linspace(0, 252, len(h_alpha_em_vals_1))
-x_R2 = np.linspace(0, 252, len(radio_em_vals_2))
-x_H2 = np.linspace(0, 252, len(h_alpha_em_vals_2))
-x_R3 = np.linspace(0, 252, len(radio_em_vals_3))
-x_H3 = np.linspace(0, 252, len(h_alpha_em_vals_3))
-
-#ax1.spines['top'].set_color('none')
-#ax1.spines['bottom'].set_color('none')
-#ax1.spines['left'].set_color('none')
-#ax1.spines['right'].set_color('none')
-#ax1.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
-# Set common labels
-#ax1.set_xlabel('Arcseconds West of 350.22\N{DEGREE SIGN}')
-#ax1.set_ylabel('Emission Measure, $pc\:cm^{-6}$', labelpad=25.)
-
-#ax0.plot(x_R1, radio_em_vals_1)
-#ax0.plot(x_H1, h_alpha_em_vals_1)
-#ax0.set_yscale('log')
-#ax0.set_title('Dec = 61.202\N{DEGREE SIGN}')
-#ax1 = fig.add_subplot(312)
-#ax1.plot(x_R2, radio_em_vals_2)
-#ax1.plot(x_H2, h_alpha_em_vals_2)
-#ax1.set_yscale('log')
-#ax1.set_title('Dec = 61.197\N{DEGREE SIGN}')
-#ax2 = fig.add_subplot(313)
-#ax2.plot(x_R3, radio_em_vals_3)
-#ax2.plot(x_H3, h_alpha_em_vals_3)
-#ax2.set_yscale('log')
-#ax2.set_title('Dec = 61.192\N{DEGREE SIGN}')
-
-
-# Hide x labels and tick labels for top plots and y ticks for right plots.
-
-#ax0.label_outer()
-#ax1.label_outer()
-#ax2.label_outer()
-
-#plt.savefig(radio_image_filename+'__EM_COMP.png')
-#plt.show()
-
-
-"""PLOTTING RADIO EMISSION MEASURE"""
-
-norm = ImageNormalize(em, interval=MinMaxInterval(), stretch=SqrtStretch())
-#fig_R=plt.figure(2)
-#ax=fig_R.add_subplot(111, projection=wcs_R, slices=('x','y'))
-em_map=ax2.imshow(em, origin='lower', cmap='plasma', norm=norm, vmax=3e6, vmin=0)
-ax2.set_xlabel('Right Ascension\nJ2000')
-ax2.set_ylabel('Declination')
-cbar = fig.colorbar(em_map, ax2)
-cbar.set_label('Emission Measure, $pc\:cm^{-6}$')
-
-ax2.plot((l_pixel_radio_1[1], r_pixel_radio_1[1]), (l_pixel_radio_1[0], r_pixel_radio_1[0]), c='white')
-ax2.plot((l_pixel_radio_2[1], r_pixel_radio_2[1]), (l_pixel_radio_2[0], r_pixel_radio_2[0]), c='white')
-ax2.plot((l_pixel_radio_3[1], r_pixel_radio_3[1]), (l_pixel_radio_3[0], r_pixel_radio_3[0]), c='white')
-
-dims=np.shape(em)
-centre=(dims[0]/2., dims[1]/2.)
-ax2.set_xlim(centre[0]-300, centre[0]+300)
-ax2.set_ylim(centre[1]-300, centre[1]+300)
-
-ra = ax2.coords[0]
-ra.set_format_unit('degree', decimal=True)
-ax2.set_xlabel('Right Ascension J2000')
-dec=ax2.coords[1]
-dec.set_format_unit('degree', decimal=True)
-ax2.set_ylabel('Declination')
-
-
-
-"""PLOTTING RATIO OF BOTH"""
-
 x = np.linspace(0, 252, num = 170)
 
-R_inter_1 = interp1d(x_R1, radio_em_vals_1, kind = 'cubic')
-R_inter_2 = interp1d(x_R2, radio_em_vals_2, kind = 'cubic')
-R_inter_3 = interp1d(x_R3, radio_em_vals_3, kind = 'cubic')
+R_inter_1 = interp1d(x_arrays[0], xval_arrays[0], kind = 'cubic')
+R_inter_2 = interp1d(x_arrays[2], xval_arrays[2], kind = 'cubic')
+R_inter_3 = interp1d(x_arrays[4], xval_arrays[4], kind = 'cubic')
 
-H_inter_1 = interp1d(x_H1, h_alpha_em_vals_1, kind = 'cubic')
-H_inter_2 = interp1d(x_H2, h_alpha_em_vals_2, kind = 'cubic')
-H_inter_3 = interp1d(x_H3, h_alpha_em_vals_3, kind = 'cubic')
+H_inter_1 = interp1d(x_arrays[1], xval_arrays[1], kind = 'cubic')
+H_inter_2 = interp1d(x_arrays[3], xval_arrays[3], kind = 'cubic')
+H_inter_3 = interp1d(x_arrays[5], xval_arrays[5], kind = 'cubic')
 
 R1 = R_inter_1(x)
 R2 = R_inter_2(x)
 R3 = R_inter_3(x)
-
 H1 = H_inter_1(x)
 H2 = H_inter_2(x)
 H3 = H_inter_3(x)
-
 ratio_1 = H1 / R1
 ratio_2 = H2 / R2
 ratio_3 = H3 / R3
 
-#ax3.plot(x, ratio_1, label='61.202\N{DEGREE SIGN}')
-#ax3.plot(x, ratio_2, label='61.197\N{DEGREE SIGN}')
-#ax3.plot(x, ratio_3, label='61.192\N{DEGREE SIGN}')
+axMid.plot(x, ratio_1, label='61.202\N{DEGREE SIGN}')
+axMid.plot(x, ratio_2, label='61.197\N{DEGREE SIGN}')
+axMid.plot(x, ratio_3, label='61.192\N{DEGREE SIGN}')
 
-#ax3.legend()
-#ax3.set_xlabel('Arcseconds left of 350.22\N{DEGREE SIGN}')
-#ax3.set_ylabel('H\u03B1 EM / Radio EM')
-#ax3.set_yscale('log')
-#ax3.set_ylim(0, 3.)
-#plt.savefig(radio_image_filename+'__RATIO.png')
+axBot.set_xlabel('Right Ascension')
+axBot.set_ylabel('Declination')
+norm = ImageNormalize(em, interval=MinMaxInterval(), stretch=SqrtStretch())
+em_map=axBot.imshow(em, origin='lower', cmap='binary', norm=norm, vmax=np.max(em), vmin=np.min(em))
+cbar = fig.colorbar(em_map, axBot)
+cbar.set_label('Emission Measure, $pc\:cm^{-6}$')
+axBot.plot((l_pixel_radio_1[1], r_pixel_radio_1[1]), (l_pixel_radio_1[0], r_pixel_radio_1[0]), c='white')
+axBot.plot((l_pixel_radio_2[1], r_pixel_radio_2[1]), (l_pixel_radio_2[0], r_pixel_radio_2[0]), c='white')
+axBot.plot((l_pixel_radio_3[1], r_pixel_radio_3[1]), (l_pixel_radio_3[0], r_pixel_radio_3[0]), c='white')
+dims=np.shape(em)
+centre=(dims[0]/2., dims[1]/2.)
+axBot.set_xlim(centre[0]-150, centre[0]+150)
+axBot.set_ylim(centre[1]-150, centre[1]+150)
+#ra = axBot.coords[0]
+#ra.set_format_unit('degree', decimal=True)
+#dec=axBot.coords[1]
+#dec.set_format_unit('degree', decimal=True)
 plt.show()
 
 
