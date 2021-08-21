@@ -37,8 +37,9 @@ header_R = fits.getheader(radio_image_filename)
 
 beam = Beam.from_fits_header(header_R)
 
-SB_1=((data_1*u.Jy/u.beam).to(u.MJy/u.sr, equivalencies=u.beam_angular_area(beam))).value
-SB_1masked=np.ma.masked_invalid(SB_1)
+
+#SB_1=((data_1*u.Jy/u.beam).to(u.MJy/u.sr, equivalencies=u.beam_angular_area(beam))).value
+SB_1masked=np.ma.masked_invalid(data_1)
 
 def em(SB_1masked):
 
