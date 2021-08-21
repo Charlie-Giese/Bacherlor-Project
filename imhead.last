@@ -1,7 +1,0 @@
-taskname           = "imhead"
-imagename          =  "/home/charlie/college/sophister_proj/fits/ngc7635_10-11_wide_g0.5_briggs1.050iter_inter.image.5sigmasked.fits"
-mode               =  "get"
-hdkey              =  "beamminor"
-hdvalue            =  ""
-verbose            =  False
-#imhead(imagename="/home/charlie/college/sophister_proj/fits/ngc7635_10-11_wide_g0.5_briggs1.050iter_inter.image.5sigmasked.fits",mode="get",hdkey="beamminor",hdvalue="",verbose=False)
