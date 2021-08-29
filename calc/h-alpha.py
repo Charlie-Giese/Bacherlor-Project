@@ -143,37 +143,37 @@ h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_
 fig = plt.figure(constrained_layout=True, figsize=(10, 4))
 subfigs = fig.subfigures(3, 1, wspace=0.07)
 
-axsTop = subfigs[0].subplots(3, 1, sharex = True, aspect="auto")
+axTop1 = subfigs[0].add_subplot(311, sharex = True, aspect="auto")
+axTop2 = subfigs[0].add_subplot(312, sharex = True, aspect="auto")
+axTop3 = subfigs[0].add_subplot(313, sharex = True, aspect="auto")
 axMid = subfigs[1].add_subplot(111, projection = wcs_R, slices=('x', 'y'), xticks=[]), aspect="auto")
 axBot = subfigs[2].add_subplot(111, aspect="auto")
 
 """PLOTTING EM COMPARISONS"""
 
-x_arrays = [
-np.linspace(0, 252, len(radio_em_vals_1)),
-np.linspace(0, 252, len(h_alpha_em_vals_1)),
-np.linspace(0, 252, len(radio_em_vals_2)),
-np.linspace(0, 252, len(h_alpha_em_vals_2)),
-np.linspace(0, 252, len(radio_em_vals_3)),
-np.linspace(0, 252, len(h_alpha_em_vals_3))
-]
+X1 = np.linspace(0, 252, len(radio_em_vals_1)),
+X2 = np.linspace(0, 252, len(h_alpha_em_vals_1)),
+X3 = np.linspace(0, 252, len(radio_em_vals_2)),
+X4 = np.linspace(0, 252, len(h_alpha_em_vals_2)),
+X5 = np.linspace(0, 252, len(radio_em_vals_3)),
+X6 = np.linspace(0, 252, len(h_alpha_em_vals_3))
 
-xval_arrays = [
 radio_em_vals_1,
 h_alpha_em_vals_1,
 radio_em_vals_2,
 h_alpha_em_vals_2,
 radio_em_vals_3,
 h_alpha_em_vals_3
-]
-i,j = 0,1
-titles = ['Dec = 61.202\N{DEGREE SIGN}', 'Dec = 61.197\N{DEGREE SIGN}', 'Dec = 61.192\N{DEGREE SIGN}']
-for ax in axsTop:
-	ax.set_yscale('log')
-	ax.set_xticks(ticks=[])
-	ax.plot(x_arrays[i], xval_arrays[i], label = 'Radio')
-	ax.plot(x_arrays[j], xval_arrays[j], label = 'H-alpha')
-	i,j ++1
+
+axTop1.set_xticks(ticks=[])
+axTop2.set_xticks(ticks=[])
+axTop3.set_xticks(ticks=[])
+axTop1.plot(X1, radio_em_vals_1, label = 'Radio')
+axTop1.plot(X2, h_alpha_em_vals_1, label = 'H-alpha')
+axTop2.plot(X1, radio_em_vals_1, label = 'Radio')
+axTop2.plot(X2, h_alpha_em_vals_1, label = 'H-alpha')
+axTop3.plot(X1, radio_em_vals_1, label = 'Radio')
+axTop3.plot(X2, h_alpha_em_vals_1, label = 'H-alpha')
 
 # Set parameters for EM comparison
 #ax1.set_xlabel('Arcseconds West of 350.22\N{DEGREE SIGN}')
