@@ -143,9 +143,9 @@ h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_
 fig = plt.figure(constrained_layout=True, figsize=(10, 4))
 subfigs = fig.subfigures(3, 1, wspace=0.07)
 
-axsTop = subfigs[0].subplots(3, 1, sharex = True)
-axMid = subfigs[1].add_subplot(111, projection = wcs_R, slices=('x', 'y'), xticks=[]))
-axBot = subfigs[2].add_subplot(111)
+axsTop = subfigs[0].subplots(3, 1, sharex = True, aspect="auto")
+axMid = subfigs[1].add_subplot(111, projection = wcs_R, slices=('x', 'y'), xticks=[]), aspect="auto")
+axBot = subfigs[2].add_subplot(111, aspect="auto")
 
 """PLOTTING EM COMPARISONS"""
 
@@ -170,7 +170,6 @@ i,j = 0,1
 titles = ['Dec = 61.202\N{DEGREE SIGN}', 'Dec = 61.197\N{DEGREE SIGN}', 'Dec = 61.192\N{DEGREE SIGN}']
 for ax in axsTop:
 	ax.set_yscale('log')
-	ax.set_ylabel('Emission Measure, $pc\:cm^{-6}$', labelpad=25.)
 	ax.set_xticks(ticks=[])
 	ax.plot(x_arrays[i], xval_arrays[i], label = 'Radio')
 	ax.plot(x_arrays[j], xval_arrays[j], label = 'H-alpha')
