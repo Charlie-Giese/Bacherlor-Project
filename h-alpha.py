@@ -141,11 +141,11 @@ h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_
 """SETTING UP FIGURE"""
 
 fig = plt.figure(constrained_layout=True, figsize=(10, 4))
-subfigs = fig.subfigures(3, 1, wspace=0.07, width_ratios=[1, 1, 1])
+subfigs = fig.subfigures(1, 3, wspace=0.07, width_ratios=[1, 1, 1])
 
 axsTop = subfigs[0].subplots(3, 1, sharex=True)
-axMid = subfigs[1].add_subplot(111)
-axBot = subfigs[2].add_subplot(111, projection = wcs_R, slices=('x', 'y'), xticks=[])
+axMid = subfigs[2].add_subplot(111)
+axBot = subfigs[1].add_subplot(111, projection = wcs_R, slices=('x', 'y'), xticks=[])
 
 # Set common labels for axsTop
 ax1 = subfigs[0].add_subplot(111)
@@ -157,16 +157,14 @@ ax1.spines['left'].set_color('none')
 ax1.spines['right'].set_color('none')
 ax1.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
 
-x_arrays = [
-np.linspace(0, 252, len(radio_em_vals_1)),
-np.linspace(0, 252, len(h_alpha_em_vals_1)),
-np.linspace(0, 252, len(radio_em_vals_2)),
-np.linspace(0, 252, len(h_alpha_em_vals_2)),
-np.linspace(0, 252, len(radio_em_vals_3)),
-np.linspace(0, 252, len(h_alpha_em_vals_3))
-]
-
-xval_arrays = [radio_em_vals_1,h_alpha_em_vals_1,radio_em_vals_2,h_alpha_em_vals_2,radio_em_vals_3,h_alpha_em_vals_3]
+x_R1 = np.linspace(0, 252, len(radio_em_vals_1))
+x_H1 = np.linspace(0, 252, len(h_alpha_em_vals_1))
+x_R2 = np.linspace(0, 252, len(radio_em_vals_2))
+x_H2 = np.linspace(0, 252, len(h_alpha_em_vals_2))
+x_R3 = np.linspace(0, 252, len(radio_em_vals_3))
+x_H3 = np.linspace(0, 252, len(h_alpha_em_vals_3))
+list_x=[x_R1,x_H1,x_R2,x_H2,x_R3,x_H3]
+list_y=[radio_em_vals_1,h_alpha_em_vals_1,radio_em_vals_2,h_alpha_em_vals_2,radio_em_vals_3,h_alpha_em_vals_3]
 i,j = 0,1
 
 titles = ['Dec = 61.202\N{DEGREE SIGN}', 'Dec = 61.197\N{DEGREE SIGN}', 'Dec = 61.192\N{DEGREE SIGN}']
