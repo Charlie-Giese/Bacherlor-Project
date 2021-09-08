@@ -101,7 +101,7 @@ smoothed = gaussian_filter(flux_true, sigma = [sigma_1,sigma_2])
 
 EM_ha = smoothed / 1.17e-7
 
-"""SETTING UP THE COORDINATES OF THE 4 LINES"""
+#SETTING UP THE COORDINATES OF THE 4 LINES
 
 print('Calculating coordinates of slices')
 
