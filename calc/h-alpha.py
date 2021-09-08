@@ -14,6 +14,7 @@ from astropy.wcs import WCS
 from matplotlib import cm
 from astropy.visualization import (MinMaxInterval, SqrtStretch,
                                    ImageNormalize, LogStretch)
+import aplpy
 import argparse
 from radio_beam import Beam
 from astropy.coordinates import SkyCoord
@@ -23,10 +24,12 @@ import matplotlib
 
 #setting graphical parameters
 
-matplotlib.rcParams['font.size'] = 16
-matplotlib.rcParams['figure.figsize'] = [6.8,5.5]
-matplotlib.rcParams['figure.dpi'] = 120
-matplotlib.rcParams['font.sans-serif'] = "Nimbus Roman"
+matplotlib.rcParams['font.sans-serif'] = 'Nimbus Roman'
+plt.rcParams['font.size'] = 12
+plt.rcParams['xtick.direction'] = 'in'
+plt.rcParams['ytick.direction'] = 'in'
+plt.rcParams['figure.figsize']  = [10,10]
+plt.rcParams['figure.dpi']  = 150
 
 
 # IMPORTING RADIO DATA AND MAKING NECESSARY CONVERSIONS
@@ -63,7 +66,7 @@ wcs_R = WCS(header_R)[0,0,:,:]
 
 
 #IMPORTING H-ALPHA DATA AND MAKING NECESSARY CONVERSIONS
-
+"""
 print('Importing H-Alpha data')
 inputfile_H= 'hlsp_heritage_hst_wfc3-uvis_bubble_nebula_f656n_v1_drc.fits'
 with fits.open(inputfile_H) as hdul:
@@ -97,7 +100,7 @@ sigma_2 = bmin /(2 * m.sqrt(2 * m.log(2)) * header_H['D024ISCL'])
 smoothed = gaussian_filter(flux_true, sigma = [sigma_1,sigma_2])
 
 EM_ha = smoothed / 1.17e-7
-
+"""
 """SETTING UP THE COORDINATES OF THE 4 LINES"""
 
 print('Calculating coordinates of slices')
@@ -127,7 +130,7 @@ l_pixel_h_alpha_3 = wcs_H.world_to_array_index(l_coord_3)
 r_pixel_h_alpha_3 = wcs_H.world_to_array_index(r_coord_3)
 
 """EXTRACTING EMISSION MEASURE VALUES"""
-
+"""
 radio_em_vals_1 = em[l_pixel_radio_1[0] , l_pixel_radio_1[1] : r_pixel_radio_1[1]]
 radio_em_vals_2 = em[l_pixel_radio_2[0] , l_pixel_radio_2[1] : r_pixel_radio_2[1]]
 radio_em_vals_3 = em[l_pixel_radio_3[0] , l_pixel_radio_3[1] : r_pixel_radio_3[1]]
@@ -137,16 +140,19 @@ radio_em_vals_3 = em[l_pixel_radio_3[0] , l_pixel_radio_3[1] : r_pixel_radio_3[1
 h_alpha_em_vals_1 = EM_ha[l_pixel_h_alpha_1[0] , l_pixel_h_alpha_1[1] : r_pixel_h_alpha_1[1]]
 h_alpha_em_vals_2 = EM_ha[l_pixel_h_alpha_2[0] , l_pixel_h_alpha_2[1] : r_pixel_h_alpha_2[1]]
 h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_h_alpha_3[1]]
-
+"""
 """SETTING UP FIGURE"""
 
-fig = plt.figure()
+fig = plt.figure(figsize=(6, 10))
+subfig_1 = fig.add_subfigure()
+
 subfigs = fig.subfigures(3, 1, wspace=0.07)
 
-axsTop = subfigs[0].subplots(3, 1, sharex=True)
-axMid = subfigs[2].add_subplot(111)
-axBot = subfigs[1].add_subplot(111, projection = wcs_R, slices=('x', 'y'), xticks=[])
+f1 = aplpy.FITSFigure(em, figure=fig, subplot=[0.15,0.4,0.7,0.35])
+ax2 = fig.add_axes([0.15, 0.1, 0.7, 0.25])
+ax3 = fig.add_axes([0.15, 0.8, 0.7, 0.15])
 
+plt.show()
 # Set common labels for axsTop
 #ax1 = subfigs[0].add_subplot(111)
 #ax1.set_xlabel('Arcseconds West of 350.22\N{DEGREE SIGN}')
@@ -156,6 +162,7 @@ axBot = subfigs[1].add_subplot(111, projection = wcs_R, slices=('x', 'y'), xtick
 #ax1.spines['left'].set_color('none')
 #ax1.spines['right'].set_color('none')
 #ax1.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
+"""
 x_arrays = [
 np.linspace(0, 252, len(radio_em_vals_1)),
 np.linspace(0, 252, len(h_alpha_em_vals_1)),
@@ -225,7 +232,7 @@ axBot.set_ylim(centre[1]-150, centre[1]+150)
 #dec.set_format_unit('degree', decimal=True)
 plt.show()
 
-
+"""
 """PLOTTING H-ALPHA emission measure"""
 """
 plot_data=EM_ha
