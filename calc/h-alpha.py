@@ -144,9 +144,6 @@ h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_
 """SETTING UP FIGURE"""
 
 fig = plt.figure(figsize=(6, 10))
-subfig_1 = fig.add_subfigure()
-
-subfigs = fig.subfigures(3, 1, wspace=0.07)
 
 f1 = aplpy.FITSFigure(em, figure=fig, subplot=[0.15,0.4,0.7,0.35])
 ax2 = fig.add_axes([0.15, 0.1, 0.7, 0.25])
