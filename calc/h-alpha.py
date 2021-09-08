@@ -100,7 +100,7 @@ sigma_2 = bmin /(2 * m.sqrt(2 * m.log(2)) * header_H['D024ISCL'])
 smoothed = gaussian_filter(flux_true, sigma = [sigma_1,sigma_2])
 
 EM_ha = smoothed / 1.17e-7
-"""
+
 """SETTING UP THE COORDINATES OF THE 4 LINES"""
 
 print('Calculating coordinates of slices')
@@ -128,7 +128,7 @@ l_pixel_radio_3 = wcs_R.world_to_array_index(l_coord_3)
 r_pixel_radio_3 = wcs_R.world_to_array_index(r_coord_3)
 l_pixel_h_alpha_3 = wcs_H.world_to_array_index(l_coord_3)
 r_pixel_h_alpha_3 = wcs_H.world_to_array_index(r_coord_3)
-
+"""
 """EXTRACTING EMISSION MEASURE VALUES"""
 """
 radio_em_vals_1 = em[l_pixel_radio_1[0] , l_pixel_radio_1[1] : r_pixel_radio_1[1]]
