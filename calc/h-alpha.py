@@ -21,6 +21,7 @@ from astropy.coordinates import SkyCoord
 from scipy.ndimage import gaussian_filter
 from scipy.interpolate import interp1d
 import matplotlib
+import astropy
 
 #setting graphical parameters
 
@@ -33,22 +34,6 @@ plt.rcParams['figure.dpi']  = 150
 
 
 # IMPORTING RADIO DATA AND MAKING NECESSARY CONVERSIONS
-
-def import_radio(file):
-
-	print('Importing Radio band data')
-
-	radio_image_filename = file
-
-	with fits.open(radio_image_filename) as hdul_1:
-		data_1=hdul_1[0].data[0,0,:,:]
-		header_R = fits.getheader(radio_image_filename)
-
-	beam = Beam.from_fits_header(header_R)
-	data_1[data_1 == np.nan] = 0.0
-	return data_1, header_R
-
-
 def em(radio_flux):
 
 	T=8000 #K
@@ -59,11 +44,30 @@ def em(radio_flux):
 	emission_measure = (-1 *np.log(1 - ((S_erg*c**2)/(2*k_b*T*(v**2)))) * 1/(3.28e-7) * (T/1e4)**1.35 * (v/1e9)**2.1)
 	return emission_measure
 
-file = sys.argv[1]
-radio_flux, header_R = import_radio(file)
-em=em(radio_flux)
-print(type(em))
-wcs_R = WCS(header_R)[0,0,:,:]
+
+print('Importing Radio band data')
+
+radio_image_filename = sys.argv[1]
+
+with fits.open(radio_image_filename) as hdul_1:
+	data_1=hdul_1[0].data[0,0,:,:]
+	header_R = fits.getheader(radio_image_filename)
+	data_1[data_1 == np.nan] = 0.0
+	data_1 = em(data_1)
+	header_1 = hdul_1[0].header
+	header_1.set('NAXIS', value=2)
+
+
+	imsize=300
+	dims=np.shape(data_1)
+	print(dims)
+	centre=(dims[0]/2, dims[1]/2)
+	array = data_1[int(centre[0]-imsize):int(centre[0]+imsize), int(centre[1]-imsize):int(centre[1]+imsize)]
+	data = np.zeros(shape=[1,1,imsize*2, imsize*2])
+	data[0,0,:,:] = array
+	hdul_2 = astropy.io.fits.PrimaryHDU(data=data, header = header_1)
+	hdul_2.writeto('./newtable.fits')
+
 
 
 #IMPORTING H-ALPHA DATA AND MAKING NECESSARY CONVERSIONS
@@ -144,15 +148,19 @@ h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_
 """
 """SETTING UP FIGURE"""
 
-fig = plt.figure(figsize=(6, 10))
+fig = plt.figure(figsize=(4, 10))
 
-f1 = aplpy.FITSFigure(em, figure=fig, subplot=[0.15,0.4,0.7,0.35])
-ax2 = fig.add_axes([0.15, 0.1, 0.7, 0.25])
+f1 = aplpy.FITSFigure('./newtable.fits', figure=fig, subplot=[0.15,0.1,0.7,0.35])
+ax2 = fig.add_axes([0.15, 0.5, 0.7, 0.25])
+ax2.set_xticklabels([])
 ax3 = fig.add_axes([0.15, 0.8, 0.7, 0.15])
-f1.show_grayscale(vmin=0,vmax=4e-3)
-#f1.add_beam()
-#f.beam.set_color('white')
+ax3.set_xticklabels([])
+f1.show_grayscale()
+f1.set_theme('publication')
+f1.tick_labels.set_yformat('dd:mm')
+f1.tick_labels.set_xformat('hh:mm')
 plt.show()
+os.remove('./newtable.fits')
 
 # Set common labels for axsTop
 #ax1 = subfigs[0].add_subplot(111)
@@ -164,18 +172,16 @@ plt.show()
 #ax1.spines['right'].set_color('none')
 #ax1.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
 """
-x_arrays = [
-np.linspace(0, 252, len(radio_em_vals_1)),
-np.linspace(0, 252, len(h_alpha_em_vals_1)),
-np.linspace(0, 252, len(radio_em_vals_2)),
-np.linspace(0, 252, len(h_alpha_em_vals_2)),
-np.linspace(0, 252, len(radio_em_vals_3)),
-np.linspace(0, 252, len(h_alpha_em_vals_3))
-]
-xval_arrays=[radio_em_vals_1,h_alpha_em_vals_1,radio_em_vals_2,h_alpha_em_vals_2,radio_em_vals_3,h_alpha_em_vals_3]
-i,j = 0,1
+xr1 = np.linspace(0, 252, len(radio_em_vals_1))
+xh1 = np.linspace(0, 252, len(h_alpha_em_vals_1))
+xr2 = np.linspace(0, 252, len(radio_em_vals_2))
+xh2 = np.linspace(0, 252, len(h_alpha_em_vals_2))
+xr3 = np.linspace(0, 252, len(radio_em_vals_3))
+xh3 = np.linspace(0, 252, len(h_alpha_em_vals_3))
 
-#titles = ['Dec = 61.202\N{DEGREE SIGN}', 'Dec = 61.197\N{DEGREE SIGN}', 'Dec = 61.192\N{DEGREE SIGN}']
+
+
+
 for ax in axsTop:
 	ax.set_yscale('log')
 	#ax.set_ylabel('Emission Measure, $pc\:cm^{-6}$', labelpad=25.)
@@ -232,7 +238,6 @@ axBot.set_ylim(centre[1]-150, centre[1]+150)
 #dec=axBot.coords[1]
 #dec.set_format_unit('degree', decimal=True)
 plt.show()
-
 """
 """PLOTTING H-ALPHA emission measure"""
 """
