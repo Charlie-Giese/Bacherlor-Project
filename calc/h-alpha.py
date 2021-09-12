@@ -33,22 +33,6 @@ plt.rcParams['figure.dpi']  = 150
 
 
 # IMPORTING RADIO DATA AND MAKING NECESSARY CONVERSIONS
-
-def import_radio(file):
-
-	print('Importing Radio band data')
-
-	radio_image_filename = file
-
-	with fits.open(radio_image_filename) as hdul_1:
-		data_1=hdul_1[0].data[0,0,:,:]
-		header_R = fits.getheader(radio_image_filename)
-
-	beam = Beam.from_fits_header(header_R)
-	data_1[data_1==np.nan]=0.0
-	return data_1, header_R
-
-
 def em(radio_flux):
 
 	T=8000 #K
@@ -59,10 +43,19 @@ def em(radio_flux):
 	emission_measure = (-1 *np.log(1 - ((S_erg*c**2)/(2*k_b*T*(v**2)))) * 1/(3.28e-7) * (T/1e4)**1.35 * (v/1e9)**2.1)
 	return emission_measure
 
-file = sys.argv[1]
-radio_flux, header_R = import_radio(file)
-em=em(radio_flux)
-wcs_R = WCS(header_R)[0,0,:,:]
+
+print('Importing Radio band data')
+
+radio_image_filename = sys.argv[1]
+
+with fits.open(radio_image_filename) as hdul_1:
+	data_1=hdul_1[0].data[0,0,:,:]
+	header_R = fits.getheader(radio_image_filename)
+	data_1[data_1 == np.nan] = 0.0
+	data_1 = em(data_1)
+	hdul_1[0].data[0,0,:,:] = data_1
+	hdul.writeto('./newtable.fits')
+
 
 
 #IMPORTING H-ALPHA DATA AND MAKING NECESSARY CONVERSIONS
@@ -143,16 +136,16 @@ h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_
 """
 """SETTING UP FIGURE"""
 
-fig = plt.figure(figsize=(6, 12))
+fig = plt.figure(figsize=(6, 10))
 
-f1 = aplpy.FITSFigure(em, figure=fig, subplot=[0.15,0.4,0.7,0.35])
+f1 = aplpy.FITSFigure('./newtable.fits', figure=fig, subplot=[0.15,0.4,0.7,0.35])
 ax2 = fig.add_axes([0.15, 0.1, 0.7, 0.25])
 ax3 = fig.add_axes([0.15, 0.8, 0.7, 0.15])
 f1.show_grayscale(vmin=0,vmax=4e-3)
-f1.add_beam()
-f1.beam.set_color('black')
-f1.add_colorbar()
+#f1.add_beam()
+#f.beam.set_color('white')
 plt.show()
+os.remove('./newtable.fits')
 
 # Set common labels for axsTop
 #ax1 = subfigs[0].add_subplot(111)
