@@ -45,8 +45,8 @@ def import_radio(file):
 		header_R = fits.getheader(radio_image_filename)
 
 	beam = Beam.from_fits_header(header_R)
-	SB_1masked=np.ma.masked_invalid(data_1)
-	return SB_1masked, header_R
+	data_1[data_1==np.nan]=0.0
+	return data_1, header_R
 
 
 def em(radio_flux):
@@ -143,14 +143,15 @@ h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_
 """
 """SETTING UP FIGURE"""
 
-fig = plt.figure(figsize=(6, 10))
+fig = plt.figure(figsize=(6, 12))
 
 f1 = aplpy.FITSFigure(em, figure=fig, subplot=[0.15,0.4,0.7,0.35])
 ax2 = fig.add_axes([0.15, 0.1, 0.7, 0.25])
 ax3 = fig.add_axes([0.15, 0.8, 0.7, 0.15])
 f1.show_grayscale(vmin=0,vmax=4e-3)
 f1.add_beam()
-f.beam.set_color('white')
+f1.beam.set_color('black')
+f1.add_colorbar()
 plt.show()
 
 # Set common labels for axsTop
