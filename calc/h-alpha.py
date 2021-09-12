@@ -148,8 +148,11 @@ fig = plt.figure(figsize=(6, 10))
 f1 = aplpy.FITSFigure(em, figure=fig, subplot=[0.15,0.4,0.7,0.35])
 ax2 = fig.add_axes([0.15, 0.1, 0.7, 0.25])
 ax3 = fig.add_axes([0.15, 0.8, 0.7, 0.15])
-
+f1.show_grayscale(vmin=0,vmax=4e-3)
+f1.add_beam()
+f.beam.set_color('white')
 plt.show()
+
 # Set common labels for axsTop
 #ax1 = subfigs[0].add_subplot(111)
 #ax1.set_xlabel('Arcseconds West of 350.22\N{DEGREE SIGN}')
