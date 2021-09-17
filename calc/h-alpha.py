@@ -49,26 +49,11 @@ print('Importing Radio band data')
 
 radio_image_filename = sys.argv[1]
 
-with fits.open(radio_image_filename) as hdul_1:
-	data_1=hdul_1[0].data[0,0,:,:]
+with fits.open(radio_image_filename) as hdul_r:
+	data_r=hdul_r[0].data[0,0,:,:]
 	header_R = fits.getheader(radio_image_filename)
 	data_1[data_1 == np.nan] = 0.0
-	data_1 = em(data_1)
-	header_1 = hdul_1[0].header
-	header_1.set('NAXIS', value=2)
-
-
-	imsize=300
-	dims=np.shape(data_1)
-	print(dims)
-	centre=(dims[0]/2, dims[1]/2)
-	array = data_1[int(centre[0]-imsize):int(centre[0]+imsize), int(centre[1]-imsize):int(centre[1]+imsize)]
-	data = np.zeros(shape=[1,1,imsize*2, imsize*2])
-	data[0,0,:,:] = array
-	hdul_2 = astropy.io.fits.PrimaryHDU(data=data, header = header_1)
-	hdul_2.writeto('./newtable.fits')
-
-
+	em_data = em(data_1)
 
 #IMPORTING H-ALPHA DATA AND MAKING NECESSARY CONVERSIONS
 """
@@ -105,9 +90,9 @@ sigma_2 = bmin /(2 * m.sqrt(2 * m.log(2)) * header_H['D024ISCL'])
 smoothed = gaussian_filter(flux_true, sigma = [sigma_1,sigma_2])
 
 EM_ha = smoothed / 1.17e-7
-
+"""
 #SETTING UP THE COORDINATES OF THE 4 LINES
-
+"""
 print('Calculating coordinates of slices')
 
 l_coord_1 = SkyCoord(350.22, 61.202, unit='deg', frame='fk5')
@@ -146,21 +131,26 @@ h_alpha_em_vals_1 = EM_ha[l_pixel_h_alpha_1[0] , l_pixel_h_alpha_1[1] : r_pixel_
 h_alpha_em_vals_2 = EM_ha[l_pixel_h_alpha_2[0] , l_pixel_h_alpha_2[1] : r_pixel_h_alpha_2[1]]
 h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_h_alpha_3[1]]
 """
-"""SETTING UP FIGURE"""
+"""SETTING UP FIGURES"""
 
-fig = plt.figure(figsize=(4, 10))
+fig1 = plt.figure(figsize=(4, 6))
+fig2 = plt.figure(figsize=(4, 6))
+fig3 = plt.figure(figsize=(4, 6))
 
-f1 = aplpy.FITSFigure('./newtable.fits', figure=fig, subplot=[0.15,0.1,0.7,0.35])
-ax2 = fig.add_axes([0.15, 0.5, 0.7, 0.25])
-ax2.set_xticklabels([])
-ax3 = fig.add_axes([0.15, 0.8, 0.7, 0.15])
-ax3.set_xticklabels([])
+f1 = aplpy.FITSFigure(em_data, figure=fig)
+f1.show_lines(line_list=[np.array(l_pixel_radio_1, r_pixel_radio_1),
+						 np.array(l_pixel_radio_2, r_pixel_radio_2),
+						 np.array(l_pixel_radio_3, r_pixel_radio_3)],
+						 color='black')
+f1.set_nan_color('white')
 f1.show_grayscale()
 f1.set_theme('publication')
+f1.add_colorbar()
+f1.
 f1.tick_labels.set_yformat('dd:mm')
 f1.tick_labels.set_xformat('hh:mm')
 plt.show()
-os.remove('./newtable.fits')
+
 
 # Set common labels for axsTop
 #ax1 = subfigs[0].add_subplot(111)
