@@ -93,6 +93,7 @@ EM_ha = smoothed / 1.17e-7
 """
 #SETTING UP THE COORDINATES OF THE 4 LINES
 
+
 print('Calculating coordinates of slices')
 
 l_coord_1 = SkyCoord(350.22, 61.202, unit='deg', frame='fk5')
