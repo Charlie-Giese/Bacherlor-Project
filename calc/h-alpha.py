@@ -147,10 +147,9 @@ f1 = aplpy.FITSFigure('./temptable.fits', figure=fig1)
 #						 color='black')
 f1.set_theme('publication')
 f1.show_grayscale(0, 4e-2)
-centre_pixel = [ np.shape(data_r[0,0,:,:])[0]/2., np.shape(data_r[0,0,:,:])[1]/2.]
-centre_world = astropy.wcs.utils.pixel_to_skycoord(centre_pixel[0], centre_pixel[1], wcs = wcs_R)
-print(centre_world)
-#f1.recenter(x,y, radius = 0.001)
+#centre_pixel = [ np.shape(data_r[0,0,:,:])[0]/2., np.shape(data_r[0,0,:,:])[1]/2.]
+#centre_world = astropy.wcs.utils.pixel_to_skycoord(centre_pixel[0], centre_pixel[1], wcs = wcs_R)
+f1.recenter(350.20125, 61.20166666, radius = 0.001)
 #f1.set_nan_color('w')
 f1.add_colorbar()
 plt.show()
