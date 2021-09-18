@@ -153,7 +153,7 @@ os.remove('temptable.fits')
 fig2, axs = plt.subplots(3,1, sharex=True)
 
 # add a big axis, hide frame
-fig.add_subplot(111, frameon=False)
+fig2.add_subplot(111, frameon=False)
 # hide tick and tick label of the big axis
 plt.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
 plt.xlabel('Arcseconds West of 350.22\N{DEGREE SIGN}')
