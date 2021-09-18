@@ -49,13 +49,15 @@ print('Importing Radio band data')
 radio_image_filename = sys.argv[1]
 
 with fits.open(radio_image_filename) as hdul_r:
-	data_r=hdul_r[0].data
+	data_r=hdul_r[0].data[0,0,:,:]
 	header_R = fits.getheader(radio_image_filename)
 	em_data = em(data_r)
-	wcs_R = wcs_R = WCS(header_R)
-	hdul_new = astropy.io.fits.PrimaryHDU(data = em_data,
-										  header = header_R)
+	wcs_R = WCS(header_R, naxis=2)
+	new_header = wcs_R.to_header()
+
+	hdul_new = astropy.io.fits.PrimaryHDU(data = em_data, header = new_header)
 	hdul_new.writeto('temptable.fits')
+
 
 #IMPORTING H-ALPHA DATA AND MAKING NECESSARY CONVERSIONS
 
@@ -153,7 +155,7 @@ f1.recenter(350.20125, 61.20166666, radius = 0.001)
 #f1.set_nan_color('w')
 f1.add_colorbar()
 plt.show()
-os.remove('temptable.fits')
+#os.remove('temptable.fits')
 
 # Set common labels for axsTop
 #ax1 = subfigs[0].add_subplot(111)
