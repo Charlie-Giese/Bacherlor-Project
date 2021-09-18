@@ -97,33 +97,14 @@ EM_ha = smoothed / 1.17e-7
 """
 #SETTING UP THE COORDINATES OF THE 4 LINES
 
-"""
+
 print('Calculating coordinates of slices')
 
-l_coord_1 = SkyCoord(350.22, 61.202, unit='deg', frame='fk5')
-r_coord_1 = SkyCoord(350.15, 61.202, unit='deg', frame='fk5')
+coord_1 = np.array([350.22, 61.202],[350.15, 61.202])
+coord_2 = np.array([350.22, 61.197],[350.15, 61.197])
+coord_3 = np.array([350.22, 61.192],[350.15, 61.192])
 
-l_coord_2 = SkyCoord(350.22, 61.197, unit='deg', frame='fk5')
-r_coord_2 = SkyCoord(350.15, 61.197, unit='deg', frame='fk5')
 
-l_coord_3 = SkyCoord(350.22, 61.192, unit='deg', frame='fk5')
-r_coord_3 = SkyCoord(350.15, 61.192, unit='deg', frame='fk5')
-
-l_pixel_radio_1 = wcs_R.world_to_array_index(l_coord_1)
-r_pixel_radio_1 = wcs_R.world_to_array_index(r_coord_1)
-l_pixel_h_alpha_1 = wcs_H.world_to_array_index(l_coord_1)
-r_pixel_h_alpha_1 = wcs_H.world_to_array_index(r_coord_1)
-
-l_pixel_radio_2 = wcs_R.world_to_array_index(l_coord_2)
-r_pixel_radio_2 = wcs_R.world_to_array_index(r_coord_2)
-l_pixel_h_alpha_2 = wcs_H.world_to_array_index(l_coord_2)
-r_pixel_h_alpha_2 = wcs_H.world_to_array_index(r_coord_2)
-
-l_pixel_radio_3 = wcs_R.world_to_array_index(l_coord_3)
-r_pixel_radio_3 = wcs_R.world_to_array_index(r_coord_3)
-l_pixel_h_alpha_3 = wcs_H.world_to_array_index(l_coord_3)
-r_pixel_h_alpha_3 = wcs_H.world_to_array_index(r_coord_3)
-"""
 """EXTRACTING EMISSION MEASURE VALUES"""
 """
 radio_em_vals_1 = em[l_pixel_radio_1[0] , l_pixel_radio_1[1] : r_pixel_radio_1[1]]
@@ -143,16 +124,11 @@ fig1 = plt.figure(figsize=(4, 6))
 #fig3 = plt.figure(figsize=(4, 6))
 
 f1 = aplpy.FITSFigure('./temptable.fits', figure=fig1)
-#f1.show_lines(line_list=[np.array(l_pixel_radio_1, r_pixel_radio_1),
-#						 np.array(l_pixel_radio_2, r_pixel_radio_2),
-#						 np.array(l_pixel_radio_3, r_pixel_radio_3)],
-#						 color='black')
+f1.show_lines(line_list=[coord_1, coord_2, coord_3, color='black')
 f1.set_theme('publication')
 f1.show_grayscale(0, 4e-2)
-#centre_pixel = [ np.shape(data_r[0,0,:,:])[0]/2., np.shape(data_r[0,0,:,:])[1]/2.]
-#centre_world = astropy.wcs.utils.pixel_to_skycoord(centre_pixel[0], centre_pixel[1], wcs = wcs_R)
-f1.recenter(350.20125, 61.20166666, radius = 0.1)
-#f1.set_nan_color('w')
+f1.recenter(350.20125, 61.20166666, radius = 0.05)
+f1.set_nan_color('w')
 f1.add_colorbar()
 plt.show()
 os.remove('temptable.fits')
