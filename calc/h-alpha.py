@@ -150,7 +150,7 @@ f1.add_colorbar()
 """
 os.remove('temptable.fits')
 
-fig2, axs = plt.subplots(3,1, sharex=True)
+fig2, axs = plt.subplots(1,3, sharex=True)
 
 # add a big axis, hide frame
 fig2.add_subplot(111, frameon=False)
@@ -181,7 +181,7 @@ axs[1].set_xticks(ticks=[])
 fig3 = plt.figure()
 ax3 = fig3.add_subplot(111)
 ax3.set_ylabel('H\u03B1 EM / Radio EM')
-ax3.set_ylim(-3, 3.)
+#ax3.set_ylim(-3, 3.)
 x = np.linspace(0, 252, num = 170)
 
 R_inter_1 = interp1d(xr1, radio_em_vals_1, kind = 'cubic')
@@ -202,9 +202,9 @@ ratio_1 = H1 / R1
 ratio_2 = H2 / R2
 ratio_3 = H3 / R3
 
-ax3.plot(x, ratio_1, label='61.202\N{DEGREE SIGN}')
-ax3.plot(x, ratio_2, label='61.197\N{DEGREE SIGN}')
-ax3.plot(x, ratio_3, label='61.192\N{DEGREE SIGN}')
+ax3.plot(x, np.log(ratio_1), label='61.202\N{DEGREE SIGN}')
+ax3.plot(x, np.log(ratio_2), label='61.197\N{DEGREE SIGN}')
+ax3.plot(x, np.log(ratio_3), label='61.192\N{DEGREE SIGN}')
 ax3.legend()
 plt.show()
 
