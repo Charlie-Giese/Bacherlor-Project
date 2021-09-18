@@ -147,8 +147,8 @@ f1.set_theme('publication')
 f1.show_grayscale()
 f1.set_theme('publication')
 f1.add_colorbar()
-f1.tick_labels.set_yformat('dd:mm')
-f1.tick_labels.set_xformat('hh:mm')
+f1.xaxis_coord_type('dd:mm')
+f1.yaxis_coord_type('hh:mm')
 plt.show()
 
 
