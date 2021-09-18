@@ -51,9 +51,12 @@ radio_image_filename = sys.argv[1]
 with fits.open(radio_image_filename) as hdul_r:
 	data_r=hdul_r[0].data[0,0,:,:]
 	header_R = fits.getheader(radio_image_filename)
-	data_r[data_r == np.nan] = 0.0
+	#data_r[data_r == np.nan] = 0.0
 	em_data = em(data_r)
-	wcs_R = WCS(header_R, naxis=2)
+
+	hdul_new = astropy.io.fits.PrimaryHDU(data = em_data,
+										  header = header_R)
+	hdul_new.writeto('temptable.fits')
 
 #IMPORTING H-ALPHA DATA AND MAKING NECESSARY CONVERSIONS
 
@@ -138,19 +141,19 @@ fig1 = plt.figure(figsize=(4, 6))
 #fig2 = plt.figure(figsize=(4, 6))
 #fig3 = plt.figure(figsize=(4, 6))
 
-f1 = aplpy.FITSFigure(em_data, figure=fig1)
+f1 = aplpy.FITSFigure('./temptable.fits', figure=fig1)
 #f1.show_lines(line_list=[np.array(l_pixel_radio_1, r_pixel_radio_1),
 #						 np.array(l_pixel_radio_2, r_pixel_radio_2),
 #						 np.array(l_pixel_radio_3, r_pixel_radio_3)],
 #						 color='black')
 f1.set_theme('publication')
-f1.show_grayscale(vmin = 0, vmax = np.max(em_data))
+f1.show_grayscale()
 #f1.set_nan_color('w')
 f1.add_colorbar()
 #f1.tick_labels.set_yformat('dd:mm')
 #f1.tick_labels.set_xformat('hh:mm')
 plt.show()
-
+os.remove('temptable.fits')
 
 # Set common labels for axsTop
 #ax1 = subfigs[0].add_subplot(111)
