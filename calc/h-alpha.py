@@ -143,7 +143,7 @@ f1 = aplpy.FITSFigure(em_data, figure=fig1)
 #						 np.array(l_pixel_radio_3, r_pixel_radio_3)],
 #						 color='black')
 f1.set_theme('publication')
-f1.show_grayscale(vmin = 0, vmax = 4e-2)
+f1.show_grayscale(vmin = 0, vmax = np.max(em_data))
 #f1.set_nan_color('w')
 f1.add_colorbar()
 #f1.tick_labels.set_yformat('dd:mm')
