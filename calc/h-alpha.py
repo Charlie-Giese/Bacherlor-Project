@@ -51,7 +51,6 @@ radio_image_filename = sys.argv[1]
 with fits.open(radio_image_filename) as hdul_r:
 	data_r=hdul_r[0].data
 	header_R = fits.getheader(radio_image_filename)
-	#data_r[data_r == np.nan] = 0.0
 	em_data = em(data_r)
 	wcs_R = wcs_R = WCS(header_R)
 	hdul_new = astropy.io.fits.PrimaryHDU(data = em_data,
@@ -148,6 +147,9 @@ f1 = aplpy.FITSFigure('./temptable.fits', figure=fig1)
 #						 color='black')
 f1.set_theme('publication')
 f1.show_grayscale(0, 4e-2)
+centre_pixel = [ np.shape(data_r[0,0,:,:])[0]/2., np.shape(data_r[0,0,:,:])[1]/2.]
+x,y = f1.pixel2world(xp = centre_pixel[0], yp = centre_pixel[1])
+f1.recenter(x,y, radius = 0.001)
 #f1.set_nan_color('w')
 f1.add_colorbar()
 plt.show()
