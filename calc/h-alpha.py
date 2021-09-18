@@ -49,7 +49,7 @@ print('Importing Radio band data')
 radio_image_filename = sys.argv[1]
 
 with fits.open(radio_image_filename) as hdul_r:
-	data_r=hdul_r[0].data[0,0,:,:]
+	data_r=hdul_r[0].data
 	header_R = fits.getheader(radio_image_filename)
 	#data_r[data_r == np.nan] = 0.0
 	em_data = em(data_r)
@@ -96,9 +96,9 @@ EM_ha = smoothed / 1.17e-7
 """
 #SETTING UP THE COORDINATES OF THE 4 LINES
 
-
-print('Calculating coordinates of slices')
 """
+print('Calculating coordinates of slices')
+
 l_coord_1 = SkyCoord(350.22, 61.202, unit='deg', frame='fk5')
 r_coord_1 = SkyCoord(350.15, 61.202, unit='deg', frame='fk5')
 
@@ -150,8 +150,6 @@ f1.set_theme('publication')
 f1.show_grayscale()
 #f1.set_nan_color('w')
 f1.add_colorbar()
-#f1.tick_labels.set_yformat('dd:mm')
-#f1.tick_labels.set_xformat('hh:mm')
 plt.show()
 os.remove('temptable.fits')
 
