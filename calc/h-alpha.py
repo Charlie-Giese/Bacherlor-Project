@@ -15,13 +15,12 @@ from matplotlib import cm
 from astropy.visualization import (MinMaxInterval, SqrtStretch,
                                    ImageNormalize, LogStretch)
 import aplpy
-import argparse
-from radio_beam import Beam
 from astropy.coordinates import SkyCoord
-from scipy.ndimage import gaussian_filter
-from scipy.interpolate import interp1d
 import matplotlib
 import astropy
+from astropy.io import fits
+from astropy import stats
+matplotlib.use('Agg')
 
 #setting graphical parameters
 
@@ -143,7 +142,8 @@ f1 = aplpy.FITSFigure(em_data, figure=fig1)
 #						 np.array(l_pixel_radio_2, r_pixel_radio_2),
 #						 np.array(l_pixel_radio_3, r_pixel_radio_3)],
 #						 color='black')
-f1.set_nan_color('white')
+#f1.set_nan_color('white')
+f1.set_theme('publication')
 f1.show_grayscale()
 f1.set_theme('publication')
 f1.add_colorbar()
