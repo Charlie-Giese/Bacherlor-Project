@@ -106,7 +106,7 @@ coord_3 = np.array([[350.22, 61.192],[350.15, 61.192]])
 
 
 """EXTRACTING EMISSION MEASURE VALUES"""
-"""
+
 radio_em_vals_1 = em[l_pixel_radio_1[0] , l_pixel_radio_1[1] : r_pixel_radio_1[1]]
 radio_em_vals_2 = em[l_pixel_radio_2[0] , l_pixel_radio_2[1] : r_pixel_radio_2[1]]
 radio_em_vals_3 = em[l_pixel_radio_3[0] , l_pixel_radio_3[1] : r_pixel_radio_3[1]]
@@ -116,15 +116,15 @@ radio_em_vals_3 = em[l_pixel_radio_3[0] , l_pixel_radio_3[1] : r_pixel_radio_3[1
 h_alpha_em_vals_1 = EM_ha[l_pixel_h_alpha_1[0] , l_pixel_h_alpha_1[1] : r_pixel_h_alpha_1[1]]
 h_alpha_em_vals_2 = EM_ha[l_pixel_h_alpha_2[0] , l_pixel_h_alpha_2[1] : r_pixel_h_alpha_2[1]]
 h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_h_alpha_3[1]]
-"""
+
 """SETTING UP FIGURES"""
 
-fig1 = plt.figure(figsize=(4, 6))
-#fig2 = plt.figure(figsize=(4, 6))
-#fig3 = plt.figure(figsize=(4, 6))
+fig1 = plt.figure(figsize=(6, 8))
+fig2 = plt.figure(figsize=(6, 8))
+fig3 = plt.figure(figsize=(6, 8))
 
 f1 = aplpy.FITSFigure('./temptable.fits', figure=fig1)
-f1.show_lines(line_list=[coord_1, coord_2, coord_3], color='black')
+f1.show_lines(line_list=[coord_1, coord_2, coord_3], color='blue')
 f1.set_theme('publication')
 f1.show_grayscale(0, 4e-2)
 f1.recenter(350.20125, 61.20166666, radius = 0.05)
@@ -133,16 +133,16 @@ f1.add_colorbar()
 plt.show()
 os.remove('temptable.fits')
 
-# Set common labels for axsTop
-#ax1 = subfigs[0].add_subplot(111)
-#ax1.set_xlabel('Arcseconds West of 350.22\N{DEGREE SIGN}')
-#ax1.set_ylabel('Emission Measure, $pc\:cm^{-6}$', labelpad=25.)
-#ax1.spines['top'].set_color('none')
-#ax1.spines['bottom'].set_color('none')
-#ax1.spines['left'].set_color('none')
-#ax1.spines['right'].set_color('none')
-#ax1.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
-"""
+
+ax2 = fig2.add_subplot(111)
+ax2.set_xlabel('Arcseconds West of 350.22\N{DEGREE SIGN}')
+ax1.set_ylabel('Emission Measure, $pc\:cm^{-6}$', labelpad=25.)
+ax2.spines['top'].set_color('none')
+ax2.spines['bottom'].set_color('none')
+ax2.spines['left'].set_color('none')
+ax2.spines['right'].set_color('none')
+ax2.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
+
 xr1 = np.linspace(0, 252, len(radio_em_vals_1))
 xh1 = np.linspace(0, 252, len(h_alpha_em_vals_1))
 xr2 = np.linspace(0, 252, len(radio_em_vals_2))
@@ -150,32 +150,28 @@ xh2 = np.linspace(0, 252, len(h_alpha_em_vals_2))
 xr3 = np.linspace(0, 252, len(radio_em_vals_3))
 xh3 = np.linspace(0, 252, len(h_alpha_em_vals_3))
 
+ax2.plot(xr1, np.log(radio_em_vals_1))
+ax2.plot(xr2, np.log(radio_em_vals_2))
+ax2.plot(xr3, np.log(radio_em_vals_3))
+ax2.plot(xh1, np.log(h_alpha_em_vals_1))
+ax2.plot(xh2, np.log(h_alpha_em_vals_2))
+ax2.plot(xh3, np.log(h_alpha_em_vals_3))
+ax.set_xticks(ticks=[])
 
 
-
-for ax in axsTop:
-	ax.set_yscale('log')
-	#ax.set_ylabel('Emission Measure, $pc\:cm^{-6}$', labelpad=25.)
-	ax.set_xticks(ticks=[])
-	ax.plot(x_arrays[i], xval_arrays[i])
-	ax.plot(x_arrays[j], xval_arrays[j])
-	#ax.set_title(titles[i])
-	i += 1
-	j +=1
-
-axMid.legend()
-axMid.set_ylabel('H\u03B1 EM / Radio EM')
-axMid.set_yscale('log')
-axMid.set_ylim(0, 3.)
+ax3 = fig3.add_subplot(111)
+ax3.legend()
+ax3.set_ylabel('H\u03B1 EM / Radio EM')
+#ax3.set_ylim(0, 3.)
 x = np.linspace(0, 252, num = 170)
 
-R_inter_1 = interp1d(x_arrays[0], xval_arrays[0], kind = 'cubic')
-R_inter_2 = interp1d(x_arrays[2], xval_arrays[2], kind = 'cubic')
-R_inter_3 = interp1d(x_arrays[4], xval_arrays[4], kind = 'cubic')
+R_inter_1 = interp1d(xr1, radio_em_vals_1, kind = 'cubic')
+R_inter_2 = interp1d(xr2, radio_em_vals_2, kind = 'cubic')
+R_inter_3 = interp1d(xr3, radio_em_vals_3, kind = 'cubic')
 
-H_inter_1 = interp1d(x_arrays[1], xval_arrays[1], kind = 'cubic')
-H_inter_2 = interp1d(x_arrays[3], xval_arrays[3], kind = 'cubic')
-H_inter_3 = interp1d(x_arrays[5], xval_arrays[5], kind = 'cubic')
+H_inter_1 = interp1d(xh1, h_alpha_em_vals_1, kind = 'cubic')
+H_inter_2 = interp1d(xh2, h_alpha_em_vals_2, kind = 'cubic')
+H_inter_3 = interp1d(xh3, h_alpha_em_vals_3, kind = 'cubic')
 
 R1 = R_inter_1(x)
 R2 = R_inter_2(x)
@@ -187,29 +183,12 @@ ratio_1 = H1 / R1
 ratio_2 = H2 / R2
 ratio_3 = H3 / R3
 
-axMid.plot(x, ratio_1, label='61.202\N{DEGREE SIGN}')
-axMid.plot(x, ratio_2, label='61.197\N{DEGREE SIGN}')
-axMid.plot(x, ratio_3, label='61.192\N{DEGREE SIGN}')
+ax3.plot(x, ratio_1, label='61.202\N{DEGREE SIGN}')
+ax3.plot(x, ratio_2, label='61.197\N{DEGREE SIGN}')
+ax3.plot(x, ratio_3, label='61.192\N{DEGREE SIGN}')
 
-axBot.set_xlabel('Right Ascension')
-axBot.set_ylabel('Declination')
-norm = ImageNormalize(em, interval=MinMaxInterval(), stretch=SqrtStretch())
-em_map=axBot.imshow(em, origin='lower', cmap='binary', norm=norm, vmax=np.max(em), vmin=np.min(em))
-cbar = fig.colorbar(em_map, axBot)
-cbar.set_label('Emission Measure, $pc\:cm^{-6}$')
-axBot.plot((l_pixel_radio_1[1], r_pixel_radio_1[1]), (l_pixel_radio_1[0], r_pixel_radio_1[0]), c='white')
-axBot.plot((l_pixel_radio_2[1], r_pixel_radio_2[1]), (l_pixel_radio_2[0], r_pixel_radio_2[0]), c='white')
-axBot.plot((l_pixel_radio_3[1], r_pixel_radio_3[1]), (l_pixel_radio_3[0], r_pixel_radio_3[0]), c='white')
-dims=np.shape(em)
-centre=(dims[0]/2., dims[1]/2.)
-axBot.set_xlim(centre[0]-150, centre[0]+150)
-axBot.set_ylim(centre[1]-150, centre[1]+150)
-#ra = axBot.coords[0]
-#ra.set_format_unit('degree', decimal=True)
-#dec=axBot.coords[1]
-#dec.set_format_unit('degree', decimal=True)
 plt.show()
-"""
+
 """PLOTTING H-ALPHA emission measure"""
 """
 plot_data=EM_ha
