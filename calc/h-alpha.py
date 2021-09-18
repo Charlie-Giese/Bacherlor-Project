@@ -98,7 +98,7 @@ EM_ha = smoothed / 1.17e-7
 
 
 print('Calculating coordinates of slices')
-
+"""
 l_coord_1 = SkyCoord(350.22, 61.202, unit='deg', frame='fk5')
 r_coord_1 = SkyCoord(350.15, 61.202, unit='deg', frame='fk5')
 
@@ -122,7 +122,7 @@ l_pixel_radio_3 = wcs_R.world_to_array_index(l_coord_3)
 r_pixel_radio_3 = wcs_R.world_to_array_index(r_coord_3)
 l_pixel_h_alpha_3 = wcs_H.world_to_array_index(l_coord_3)
 r_pixel_h_alpha_3 = wcs_H.world_to_array_index(r_coord_3)
-
+"""
 """EXTRACTING EMISSION MEASURE VALUES"""
 """
 radio_em_vals_1 = em[l_pixel_radio_1[0] , l_pixel_radio_1[1] : r_pixel_radio_1[1]]
