@@ -155,7 +155,7 @@ f1.recenter(350.20125, 61.20166666, radius = 0.1)
 #f1.set_nan_color('w')
 f1.add_colorbar()
 plt.show()
-#os.remove('temptable.fits')
+os.remove('temptable.fits')
 
 # Set common labels for axsTop
 #ax1 = subfigs[0].add_subplot(111)
