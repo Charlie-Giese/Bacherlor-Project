@@ -53,7 +53,7 @@ with fits.open(radio_image_filename) as hdul_r:
 	header_R = fits.getheader(radio_image_filename)
 	#data_r[data_r == np.nan] = 0.0
 	em_data = em(data_r)
-	wcs_R = wcs_R = WCS(header_R, naxis=2)
+	wcs_R = wcs_R = WCS(header_R)
 	hdul_new = astropy.io.fits.PrimaryHDU(data = em_data,
 										  header = header_R)
 	hdul_new.writeto('temptable.fits')
