@@ -147,7 +147,7 @@ f1 = aplpy.FITSFigure('./temptable.fits', figure=fig1)
 #						 np.array(l_pixel_radio_3, r_pixel_radio_3)],
 #						 color='black')
 f1.set_theme('publication')
-f1.show_grayscale()
+f1.show_grayscale(0, 4e-2)
 #f1.set_nan_color('w')
 f1.add_colorbar()
 plt.show()
