@@ -104,6 +104,25 @@ coord_1 = np.array([[350.22, 61.202],[350.15, 61.202]])
 coord_2 = np.array([[350.22, 61.197],[350.15, 61.197]])
 coord_3 = np.array([[350.22, 61.192],[350.15, 61.192]])
 
+l_coord_1 = SkyCoord(350.22, 61.202, unit='deg', frame='fk5')
+r_coord_1 = SkyCoord(350.15, 61.202, unit='deg', frame='fk5')
+l_coord_2 = SkyCoord(350.22, 61.197, unit='deg', frame='fk5')
+r_coord_2 = SkyCoord(350.15, 61.197, unit='deg', frame='fk5')
+l_coord_3 = SkyCoord(350.22, 61.192, unit='deg', frame='fk5')
+r_coord_3 = SkyCoord(350.15, 61.192, unit='deg', frame='fk5')
+l_pixel_radio_1 = wcs_R.world_to_array_index(l_coord_1)
+r_pixel_radio_1 = wcs_R.world_to_array_index(r_coord_1)
+l_pixel_h_alpha_1 = wcs_H.world_to_array_index(l_coord_1)
+r_pixel_h_alpha_1 = wcs_H.world_to_array_index(r_coord_1)
+l_pixel_radio_2 = wcs_R.world_to_array_index(l_coord_2)
+r_pixel_radio_2 = wcs_R.world_to_array_index(r_coord_2)
+l_pixel_h_alpha_2 = wcs_H.world_to_array_index(l_coord_2)
+r_pixel_h_alpha_2 = wcs_H.world_to_array_index(r_coord_2)
+l_pixel_radio_3 = wcs_R.world_to_array_index(l_coord_3)
+r_pixel_radio_3 = wcs_R.world_to_array_index(r_coord_3)
+l_pixel_h_alpha_3 = wcs_H.world_to_array_index(l_coord_3)
+r_pixel_h_alpha_3 = wcs_H.world_to_array_index(r_coord_3)
+
 
 """EXTRACTING EMISSION MEASURE VALUES"""
 
