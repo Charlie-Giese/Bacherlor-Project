@@ -139,10 +139,10 @@ fig2 = plt.figure(figsize=(4, 6))
 fig3 = plt.figure(figsize=(4, 6))
 
 f1 = aplpy.FITSFigure(em_data, figure=fig1)
-f1.show_lines(line_list=[np.array(l_pixel_radio_1, r_pixel_radio_1),
-						 np.array(l_pixel_radio_2, r_pixel_radio_2),
-						 np.array(l_pixel_radio_3, r_pixel_radio_3)],
-						 color='black')
+#f1.show_lines(line_list=[np.array(l_pixel_radio_1, r_pixel_radio_1),
+#						 np.array(l_pixel_radio_2, r_pixel_radio_2),
+#						 np.array(l_pixel_radio_3, r_pixel_radio_3)],
+#						 color='black')
 f1.set_nan_color('white')
 f1.show_grayscale()
 f1.set_theme('publication')
