@@ -51,7 +51,7 @@ radio_image_filename = sys.argv[1]
 with fits.open(radio_image_filename) as hdul_r:
 	data_r=hdul_r[0].data[0,0,:,:]
 	header_R = fits.getheader(radio_image_filename)
-	data_r[data_r == np.nan] = 0.0
+	#data_r[data_r == np.nan] = 0.0
 	em_data = em(data_r)
 	wcs_R = WCS(header_R, naxis=2)
 
@@ -134,21 +134,20 @@ h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_
 """SETTING UP FIGURES"""
 
 fig1 = plt.figure(figsize=(4, 6))
-fig2 = plt.figure(figsize=(4, 6))
-fig3 = plt.figure(figsize=(4, 6))
+#fig2 = plt.figure(figsize=(4, 6))
+#fig3 = plt.figure(figsize=(4, 6))
 
 f1 = aplpy.FITSFigure(em_data, figure=fig1)
 #f1.show_lines(line_list=[np.array(l_pixel_radio_1, r_pixel_radio_1),
 #						 np.array(l_pixel_radio_2, r_pixel_radio_2),
 #						 np.array(l_pixel_radio_3, r_pixel_radio_3)],
 #						 color='black')
-#f1.set_nan_color('white')
 f1.set_theme('publication')
 f1.show_grayscale()
 f1.set_theme('publication')
 f1.add_colorbar()
-f1.tick_labels.set_yformat('dd:mm')
-f1.tick_labels.set_xformat('hh:mm')
+#f1.tick_labels.set_yformat('dd:mm')
+#f1.tick_labels.set_xformat('hh:mm')
 plt.show()
 
 
