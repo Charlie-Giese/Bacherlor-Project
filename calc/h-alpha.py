@@ -20,7 +20,8 @@ import matplotlib
 import astropy
 from astropy.io import fits
 from astropy import stats
-
+from scipy.ndimage import gaussian_filter
+from scipy.interpolate import interp1d
 
 #setting graphical parameters
 
@@ -68,7 +69,7 @@ with fits.open(inputfile_H) as hdul:
 header_H = fits.getheader(inputfile_H)
 
 wcs_H = WCS(header_H)
-"""
+
 where_are_NaNs = np.isnan(data_H)
 data_H[where_are_NaNs] = 0.0
 
@@ -94,7 +95,7 @@ sigma_2 = bmin /(2 * m.sqrt(2 * m.log(2)) * header_H['D024ISCL'])
 smoothed = gaussian_filter(flux_true, sigma = [sigma_1,sigma_2])
 
 EM_ha = smoothed / 1.17e-7
-"""
+
 #SETTING UP THE COORDINATES OF THE 4 LINES
 
 
@@ -126,9 +127,9 @@ r_pixel_h_alpha_3 = wcs_H.world_to_array_index(r_coord_3)
 
 """EXTRACTING EMISSION MEASURE VALUES"""
 
-radio_em_vals_1 = em[l_pixel_radio_1[0] , l_pixel_radio_1[1] : r_pixel_radio_1[1]]
-radio_em_vals_2 = em[l_pixel_radio_2[0] , l_pixel_radio_2[1] : r_pixel_radio_2[1]]
-radio_em_vals_3 = em[l_pixel_radio_3[0] , l_pixel_radio_3[1] : r_pixel_radio_3[1]]
+radio_em_vals_1 = em_data[l_pixel_radio_1[0] , l_pixel_radio_1[1] : r_pixel_radio_1[1]]
+radio_em_vals_2 = em_data[l_pixel_radio_2[0] , l_pixel_radio_2[1] : r_pixel_radio_2[1]]
+radio_em_vals_3 = em_data[l_pixel_radio_3[0] , l_pixel_radio_3[1] : r_pixel_radio_3[1]]
 
 #So along the line, there are 3064/173 more values in Halpha than radio
 
@@ -137,11 +138,8 @@ h_alpha_em_vals_2 = EM_ha[l_pixel_h_alpha_2[0] , l_pixel_h_alpha_2[1] : r_pixel_
 h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_h_alpha_3[1]]
 
 """SETTING UP FIGURES"""
-
+"""
 fig1 = plt.figure(figsize=(6, 8))
-fig2 = plt.figure(figsize=(6, 8))
-fig3 = plt.figure(figsize=(6, 8))
-
 f1 = aplpy.FITSFigure('./temptable.fits', figure=fig1)
 f1.show_lines(line_list=[coord_1, coord_2, coord_3], color='blue')
 f1.set_theme('publication')
@@ -149,13 +147,13 @@ f1.show_grayscale(0, 4e-2)
 f1.recenter(350.20125, 61.20166666, radius = 0.05)
 f1.set_nan_color('w')
 f1.add_colorbar()
-plt.show()
+"""
 os.remove('temptable.fits')
 
-
+fig2 = plt.figure(figsize=(6, 8))
 ax2 = fig2.add_subplot(111)
 ax2.set_xlabel('Arcseconds West of 350.22\N{DEGREE SIGN}')
-ax1.set_ylabel('Emission Measure, $pc\:cm^{-6}$', labelpad=25.)
+ax2.set_ylabel('Emission Measure, $pc\:cm^{-6}$', labelpad=25.)
 ax2.spines['top'].set_color('none')
 ax2.spines['bottom'].set_color('none')
 ax2.spines['left'].set_color('none')
@@ -175,11 +173,10 @@ ax2.plot(xr3, np.log(radio_em_vals_3))
 ax2.plot(xh1, np.log(h_alpha_em_vals_1))
 ax2.plot(xh2, np.log(h_alpha_em_vals_2))
 ax2.plot(xh3, np.log(h_alpha_em_vals_3))
-ax.set_xticks(ticks=[])
+ax2.set_xticks(ticks=[])
 
-
+fig3 = plt.figure()
 ax3 = fig3.add_subplot(111)
-ax3.legend()
 ax3.set_ylabel('H\u03B1 EM / Radio EM')
 #ax3.set_ylim(0, 3.)
 x = np.linspace(0, 252, num = 170)
@@ -205,7 +202,7 @@ ratio_3 = H3 / R3
 ax3.plot(x, ratio_1, label='61.202\N{DEGREE SIGN}')
 ax3.plot(x, ratio_2, label='61.197\N{DEGREE SIGN}')
 ax3.plot(x, ratio_3, label='61.192\N{DEGREE SIGN}')
-
+ax3.legend()
 plt.show()
 
 """PLOTTING H-ALPHA emission measure"""
