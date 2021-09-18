@@ -20,7 +20,7 @@ import matplotlib
 import astropy
 from astropy.io import fits
 from astropy import stats
-matplotlib.use('Agg')
+
 
 #setting graphical parameters
 
@@ -144,6 +144,7 @@ f1 = aplpy.FITSFigure(em_data, figure=fig1)
 #						 color='black')
 f1.set_theme('publication')
 f1.show_grayscale()
+f1.set_nan_color('w')
 f1.set_theme('publication')
 f1.add_colorbar()
 #f1.tick_labels.set_yformat('dd:mm')
