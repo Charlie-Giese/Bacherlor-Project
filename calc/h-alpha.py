@@ -148,6 +148,7 @@ f1 = aplpy.FITSFigure('./temptable.fits', figure=fig1)
 f1.set_theme('publication')
 f1.show_grayscale(0, 4e-2)
 centre_pixel = [ np.shape(data_r[0,0,:,:])[0]/2., np.shape(data_r[0,0,:,:])[1]/2.]
+print(centre_pixel)
 x,y = f1.pixel2world(xp = centre_pixel[0], yp = centre_pixel[1])
 f1.recenter(x,y, radius = 0.001)
 #f1.set_nan_color('w')
