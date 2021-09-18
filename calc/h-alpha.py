@@ -100,9 +100,9 @@ EM_ha = smoothed / 1.17e-7
 
 print('Calculating coordinates of slices')
 
-coord_1 = np.array([350.22, 61.202],[350.15, 61.202])
-coord_2 = np.array([350.22, 61.197],[350.15, 61.197])
-coord_3 = np.array([350.22, 61.192],[350.15, 61.192])
+coord_1 = np.array([[350.22, 61.202],[350.15, 61.202]])
+coord_2 = np.array([[350.22, 61.197],[350.15, 61.197]])
+coord_3 = np.array([[350.22, 61.192],[350.15, 61.192]])
 
 
 """EXTRACTING EMISSION MEASURE VALUES"""
@@ -124,7 +124,7 @@ fig1 = plt.figure(figsize=(4, 6))
 #fig3 = plt.figure(figsize=(4, 6))
 
 f1 = aplpy.FITSFigure('./temptable.fits', figure=fig1)
-f1.show_lines(line_list=[coord_1, coord_2, coord_3, color='black')
+f1.show_lines(line_list=[coord_1, coord_2, coord_3], color='black')
 f1.set_theme('publication')
 f1.show_grayscale(0, 4e-2)
 f1.recenter(350.20125, 61.20166666, radius = 0.05)
