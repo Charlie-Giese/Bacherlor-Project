@@ -164,7 +164,7 @@ xh1 = np.linspace(350.15, 350.22, len(h_alpha_em_vals_1))
 xr2 = np.linspace(350.15, 350.22, len(radio_em_vals_2))
 xh2 = np.linspace(350.15, 350.22, len(h_alpha_em_vals_2))
 xr3 = np.linspace(350.15, 350.22, len(radio_em_vals_3))
-xh3 = np.linspace(350.25, 350.22, len(h_alpha_em_vals_3))
+xh3 = np.linspace(350.15, 350.22, len(h_alpha_em_vals_3))
 
 axs[0].plot(xr1, np.log(radio_em_vals_1), label = 'Radio')
 axs[1].plot(xr2, np.log(radio_em_vals_2), label = 'Radio')
