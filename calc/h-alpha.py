@@ -210,8 +210,6 @@ ax3.plot(x, np.log(ratio_2), label='Middle')
 ax3.plot(x, np.log(ratio_3), label='Bottom')
 ax3.set_aspect('auto')
 ax3.legend()
-ax3.xaxis.set_major_locator(matplotlib.ticker.LinearLocator(5))
-ax3.set_xlabels(['', '', '', '', ''])
 plt.show()
 
 """PLOTTING H-ALPHA emission measure"""
