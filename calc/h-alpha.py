@@ -178,12 +178,12 @@ axs[2].legend()
 axs[0].set_aspect('auto')
 axs[1].set_aspect('auto')
 axs[2].set_aspect('auto')
-axs[0].set_xticks(ticks=[])
-axs[1].set_xticks(ticks=[])
 
 fig3 = plt.figure(figsize=(6,6))
 ax3 = fig3.add_subplot(111)
 ax3.set_ylabel('H\u03B1 EM / Radio EM')
+ax3.set_xlabel('Right Ascension J2000')
+
 #ax3.set_ylim(-3, 3.)
 x = np.linspace(350.15, 350.22, num = 170)
 
@@ -208,6 +208,7 @@ ratio_3 = H3 / R3
 ax3.plot(x, np.log(ratio_1), label='Top')
 ax3.plot(x, np.log(ratio_2), label='Middle')
 ax3.plot(x, np.log(ratio_3), label='Bottom')
+ax3.set_xlabel('Right Ascension J2000')
 ax3.set_aspect('auto')
 ax3.legend()
 plt.show()
