@@ -210,6 +210,10 @@ ax3.plot(x, np.log(ratio_2), label='Middle')
 ax3.plot(x, np.log(ratio_3), label='Bottom')
 ax3.set_xlabel('Right Ascension J2000')
 ax3.set_aspect('auto')
+lon = ax3.coords[0]
+lat = ax3.coords[1]
+lon.set_major_formatter('dd:mm:ss.s')
+lat.set_major_formatter('dd:mm')
 ax3.legend()
 plt.show()
 
