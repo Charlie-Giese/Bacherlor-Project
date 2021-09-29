@@ -159,12 +159,12 @@ plt.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=Fa
 plt.xlabel('Arcseconds West of 350.22\N{DEGREE SIGN}')
 plt.ylabel('Emission Measure, $pc\:cm^{-6}$', labelpad=25.)
 
-xr1 = np.linspace(0, 252, len(radio_em_vals_1))
-xh1 = np.linspace(0, 252, len(h_alpha_em_vals_1))
-xr2 = np.linspace(0, 252, len(radio_em_vals_2))
-xh2 = np.linspace(0, 252, len(h_alpha_em_vals_2))
-xr3 = np.linspace(0, 252, len(radio_em_vals_3))
-xh3 = np.linspace(0, 252, len(h_alpha_em_vals_3))
+xr1 = np.linspace(350.15, 350.22, len(radio_em_vals_1))
+xh1 = np.linspace(350.15, 350.22, len(h_alpha_em_vals_1))
+xr2 = np.linspace(350.15, 350.22, len(radio_em_vals_2))
+xh2 = np.linspace(350.15, 350.22, len(h_alpha_em_vals_2))
+xr3 = np.linspace(350.15, 350.22, len(radio_em_vals_3))
+xh3 = np.linspace(350.25, 350.22, len(h_alpha_em_vals_3))
 
 axs[0].plot(xr1, np.log(radio_em_vals_1), label = 'Radio')
 axs[1].plot(xr2, np.log(radio_em_vals_2), label = 'Radio')
@@ -210,6 +210,8 @@ ax3.plot(x, np.log(ratio_2), label='Middle')
 ax3.plot(x, np.log(ratio_3), label='Bottom')
 ax3.set_aspect('auto')
 ax3.legend()
+ax3.xaxis.set_major_locator(matplotlib.ticker.LinearLocator(5))
+ax3.set_xlabels(['', '', '', '', ''])
 plt.show()
 
 """PLOTTING H-ALPHA emission measure"""
