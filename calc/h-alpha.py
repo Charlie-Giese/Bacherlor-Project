@@ -138,7 +138,7 @@ h_alpha_em_vals_2 = EM_ha[l_pixel_h_alpha_2[0] , l_pixel_h_alpha_2[1] : r_pixel_
 h_alpha_em_vals_3 = EM_ha[l_pixel_h_alpha_3[0] , l_pixel_h_alpha_3[1] : r_pixel_h_alpha_3[1]]
 
 """SETTING UP FIGURES"""
-"""
+
 fig1 = plt.figure(figsize=(6, 8))
 f1 = aplpy.FITSFigure('./temptable.fits', figure=fig1)
 f1.show_lines(line_list=[coord_1, coord_2, coord_3], color='blue')
@@ -147,10 +147,10 @@ f1.show_grayscale(0, 4e-2)
 f1.recenter(350.20125, 61.20166666, radius = 0.05)
 f1.set_nan_color('w')
 f1.add_colorbar()
-"""
+
 os.remove('temptable.fits')
 
-fig2, axs = plt.subplots(1,3, sharex=True)
+fig2, axs = plt.subplots(1,3, sharex=True, figsize=(6, 6))
 
 # add a big axis, hide frame
 fig2.add_subplot(111, frameon=False)
@@ -166,19 +166,19 @@ xh2 = np.linspace(0, 252, len(h_alpha_em_vals_2))
 xr3 = np.linspace(0, 252, len(radio_em_vals_3))
 xh3 = np.linspace(0, 252, len(h_alpha_em_vals_3))
 
-axs[0].plot(xr1, np.log(radio_em_vals_1+0.000000001), label = 'Radio')
-axs[1].plot(xr2, np.log(radio_em_vals_2+0.000000001), label = 'Radio')
-axs[2].plot(xr3, np.log(radio_em_vals_3+0.000000001), label = 'Radio')
-axs[0].plot(xh1, np.log(h_alpha_em_vals_1+0.000000001), label = 'H\u03B1')
-axs[1].plot(xh2, np.log(h_alpha_em_vals_2+0.000000001), label = 'H\u03B1')
-axs[2].plot(xh3, np.log(h_alpha_em_vals_3+0.000000001), label = 'H\u03B1')
+axs[0].plot(xr1, np.log(radio_em_vals_1), label = 'Radio')
+axs[1].plot(xr2, np.log(radio_em_vals_2), label = 'Radio')
+axs[2].plot(xr3, np.log(radio_em_vals_3), label = 'Radio')
+axs[0].plot(xh1, np.log(h_alpha_em_vals_1), label = 'H\u03B1')
+axs[1].plot(xh2, np.log(h_alpha_em_vals_2), label = 'H\u03B1')
+axs[2].plot(xh3, np.log(h_alpha_em_vals_3), label = 'H\u03B1')
 axs[0].legend()
 axs[1].legend()
 axs[2].legend()
 axs[0].set_xticks(ticks=[])
 axs[1].set_xticks(ticks=[])
 
-fig3 = plt.figure()
+fig3 = plt.figure(figsize=(6,6))
 ax3 = fig3.add_subplot(111)
 ax3.set_ylabel('H\u03B1 EM / Radio EM')
 #ax3.set_ylim(-3, 3.)
@@ -202,14 +202,14 @@ ratio_1 = H1 / R1
 ratio_2 = H2 / R2
 ratio_3 = H3 / R3
 
-ax3.plot(x, np.log(ratio_1), label='61.202\N{DEGREE SIGN}')
-ax3.plot(x, np.log(ratio_2), label='61.197\N{DEGREE SIGN}')
-ax3.plot(x, np.log(ratio_3), label='61.192\N{DEGREE SIGN}')
+ax3.plot(x, np.log(ratio_1), label='Top')
+ax3.plot(x, np.log(ratio_2), label='Middle')
+ax3.plot(x, np.log(ratio_3), label='Bottom')
 ax3.legend()
 plt.show()
 
 """PLOTTING H-ALPHA emission measure"""
-"""
+
 plot_data=EM_ha
 norm = ImageNormalize(plot_data, interval=MinMaxInterval(), stretch=SqrtStretch())
 fig_H1=plt.figure(num=3)
@@ -217,8 +217,8 @@ ax_01=fig_H1.add_subplot(111, projection=wcs_H, slices=('x','y'))
 main_image=ax_01.imshow(X=plot_data, cmap='plasma', origin='lower', norm=norm, vmax=3e6 , vmin=0.)
 cbar=fig_H1.colorbar(main_image)
 cbar.set_label('Emission Measure, $pc\:cm^{-6}$')
-ax_01.plot((l_pixel_h_alpha_1[1], r_pixel_h_alpha_1[1]), (l_pixel_h_alpha_1[0], r_pixel_h_alpha_1[0]), c='white')
-ax_01.plot((l_pixel_h_alpha_2[1], r_pixel_h_alpha_2[1]), (l_pixel_h_alpha_2[0], r_pixel_h_alpha_2[0]), c='white')
+#ax_01.plot((l_pixel_h_alpha_1[1], r_pixel_h_alpha_1[1]), (l_pixel_h_alpha_1[0], r_pixel_h_alpha_1[0]), c='white')
+#ax_01.plot((l_pixel_h_alpha_2[1], r_pixel_h_alpha_2[1]), (l_pixel_h_alpha_2[0], r_pixel_h_alpha_2[0]), c='white')
 #ax_01.plot((l_pixel_h_alpha_3[1], r_pixel_h_alpha_3[1]), (l_pixel_h_alpha_3[0], r_pixel_h_alpha_3[0]), c='white')
 #ax_01.plot((l_pixel_h_alpha_4[1], r_pixel_h_alpha_4[1]), (l_pixel_h_alpha_4[0], r_pixel_h_alpha_4[0]), c='white')
 
@@ -230,7 +230,7 @@ dec.set_format_unit('degree', decimal=True)
 ax_01.set_ylabel('Declination')
 #plt.savefig(radio_image_filename+'__HA-EM.png')
 plt.show()
-"""
+
 #Plotting non-smoothed H-Alpha
 
 """
