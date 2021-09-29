@@ -52,7 +52,7 @@ radio_image_filename = sys.argv[1]
 with fits.open(radio_image_filename) as hdul_r:
 	data_r=hdul_r[0].data[0,0,:,:]
 	header_R = fits.getheader(radio_image_filename)
-	em_data = (em(data_r)) - 8e4
+	em_data = (em(data_r))
 	wcs_R = WCS(header_R, naxis=2)
 	new_header = wcs_R.to_header()
 
@@ -94,7 +94,7 @@ sigma_2 = bmin /(2 * m.sqrt(2 * m.log(2)) * header_H['D024ISCL'])
 
 smoothed = gaussian_filter(flux_true, sigma = [sigma_1,sigma_2])
 
-EM_ha = smoothed / 1.17e-7
+EM_ha = (smoothed / 1.17e-7)  - 8e4
 
 #SETTING UP THE COORDINATES OF THE 4 LINES
 
@@ -175,9 +175,9 @@ axs[2].plot(xh3, np.log(h_alpha_em_vals_3), label = 'H\u03B1')
 axs[0].legend()
 axs[1].legend()
 axs[2].legend()
-axs[0].set_aspect('equal')
-axs[1].set_aspect('equal')
-axs[2].set_aspect('equal')
+axs[0].set_aspect('auto')
+axs[1].set_aspect('auto')
+axs[2].set_aspect('auto')
 axs[0].set_xticks(ticks=[])
 axs[1].set_xticks(ticks=[])
 
@@ -208,7 +208,7 @@ ratio_3 = H3 / R3
 ax3.plot(x, np.log(ratio_1), label='Top')
 ax3.plot(x, np.log(ratio_2), label='Middle')
 ax3.plot(x, np.log(ratio_3), label='Bottom')
-ax3.set_aspect('equal')
+ax3.set_aspect('auto')
 ax3.legend()
 plt.show()
 
