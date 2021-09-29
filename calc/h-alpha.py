@@ -52,7 +52,7 @@ radio_image_filename = sys.argv[1]
 with fits.open(radio_image_filename) as hdul_r:
 	data_r=hdul_r[0].data[0,0,:,:]
 	header_R = fits.getheader(radio_image_filename)
-	em_data = em(data_r)
+	em_data = (em(data_r)) - 8e4
 	wcs_R = WCS(header_R, naxis=2)
 	new_header = wcs_R.to_header()
 
@@ -146,7 +146,7 @@ f1.set_theme('publication')
 f1.show_grayscale(0, 4e-2)
 f1.recenter(350.20125, 61.20166666, radius = 0.05)
 f1.set_nan_color('w')
-f1.add_colorbar()
+f1.add_colorbar(axis_label_text='Emission Measure, $pc\:cm^{-6}$')
 
 os.remove('temptable.fits')
 
@@ -175,6 +175,9 @@ axs[2].plot(xh3, np.log(h_alpha_em_vals_3), label = 'H\u03B1')
 axs[0].legend()
 axs[1].legend()
 axs[2].legend()
+axs[0].set_aspect('equal')
+axs[1].set_aspect('equal')
+axs[2].set_aspect('equal')
 axs[0].set_xticks(ticks=[])
 axs[1].set_xticks(ticks=[])
 
@@ -205,11 +208,12 @@ ratio_3 = H3 / R3
 ax3.plot(x, np.log(ratio_1), label='Top')
 ax3.plot(x, np.log(ratio_2), label='Middle')
 ax3.plot(x, np.log(ratio_3), label='Bottom')
+ax3.set_aspect('equal')
 ax3.legend()
 plt.show()
 
 """PLOTTING H-ALPHA emission measure"""
-
+"""
 plot_data=EM_ha
 norm = ImageNormalize(plot_data, interval=MinMaxInterval(), stretch=SqrtStretch())
 fig_H1=plt.figure(num=3)
@@ -230,7 +234,7 @@ dec.set_format_unit('degree', decimal=True)
 ax_01.set_ylabel('Declination')
 #plt.savefig(radio_image_filename+'__HA-EM.png')
 plt.show()
-
+"""
 #Plotting non-smoothed H-Alpha
 
 """
