@@ -185,7 +185,7 @@ fig3 = plt.figure(figsize=(6,6))
 ax3 = fig3.add_subplot(111)
 ax3.set_ylabel('H\u03B1 EM / Radio EM')
 #ax3.set_ylim(-3, 3.)
-x = np.linspace(0, 252, num = 170)
+x = np.linspace(350.15, 350.22, num = 170)
 
 R_inter_1 = interp1d(xr1, radio_em_vals_1, kind = 'cubic')
 R_inter_2 = interp1d(xr2, radio_em_vals_2, kind = 'cubic')
