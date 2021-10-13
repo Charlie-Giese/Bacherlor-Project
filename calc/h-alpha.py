@@ -218,7 +218,7 @@ ax3.set_aspect('auto')
 #for val in xticks_new:
 #	tick_list.append(str(val))
 #print('strings are ', tick_list)
-ax3.set_xticklabels(tick_list)
+#ax3.set_xticklabels(tick_list)
 ax3.legend()
 plt.show()
 
