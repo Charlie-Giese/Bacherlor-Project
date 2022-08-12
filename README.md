@@ -1,2 +1,2 @@
 # sophister_proj
-Code for my bachelor's thesis project; looking for signs of non thermal emission in the bubble nebula
+Code for my bachelor's thesis project; useful for plotting radio/mm images in fits format.
